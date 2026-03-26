@@ -141,7 +141,7 @@ def main():
     car = Car()
 
     # Ursprüngliche Karte: nur für die Logikberechnung, nicht skalieren
-    game_map = pygame.image.load('map3.png').convert()
+    game_map = pygame.image.load('map5.png').convert()
     map_w, map_h = game_map.get_size()
 
     # Anzeigekarte: nur für die Darstellung, proportional skaliert
@@ -162,7 +162,7 @@ def main():
         "..",
         "ai",
         "data_file",
-        "training_data_map3.csv"
+        "training_data_map5.csv"
     )
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
