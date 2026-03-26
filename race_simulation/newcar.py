@@ -14,6 +14,7 @@ BORDER_COLOR = (255, 255, 255)
 START_POS = [830, 920]
 START_ANGLE = 0
 
+
 class Car:
     def __init__(self):
         self.sprite = pygame.image.load('car.png').convert_alpha()
@@ -26,11 +27,27 @@ class Car:
         self.speed = 0
         self.alive = True
         self.radars = []
-        self.radar_values = [0] * 5
+        self.radar_values = []
+        self.rotated_sprite = self.sprite
+        self.center = [
+            int(self.position[0] + CAR_SIZE_X / 2),
+            int(self.position[1] + CAR_SIZE_Y / 2)
+        ]
 
-    def draw(self, screen, font):
-        screen.blit(self.rotated_sprite, self.position)
-        self.draw_radars(screen, font)
+    def draw(self, screen, font, scale, offset_x, offset_y):
+        scaled_sprite = pygame.transform.scale(
+            self.rotated_sprite,
+            (
+                max(1, int(self.rotated_sprite.get_width() * scale)),
+                max(1, int(self.rotated_sprite.get_height() * scale))
+            )
+        )
+
+        draw_x = int(self.position[0] * scale + offset_x)
+        draw_y = int(self.position[1] * scale + offset_y)
+
+        screen.blit(scaled_sprite, (draw_x, draw_y))
+        self.draw_radars(screen, font, scale, offset_x, offset_y)
 
     def update(self, game_map):
         if not self.alive:
@@ -48,10 +65,20 @@ class Car:
         ]
 
         x, y = self.center
+
+        # Zuerst prüfen, ob das Auto außerhalb der Karte ist, danach auf Kollision mit dem Rand prüfen
+        map_w, map_h = game_map.get_size()
+        if x < 0 or x >= map_w or y < 0 or y >= map_h:
+            self.alive = False
+            self.speed = 0
+            print("Crash! Auto zurückgesetzt")
+            return
+
         if game_map.get_at((x, y))[:3] == BORDER_COLOR:
             self.alive = False
             self.speed = 0
             print("Crash! Auto zurückgesetzt")
+            return
 
         self.radars.clear()
         self.radar_values = []
@@ -61,11 +88,13 @@ class Car:
 
     def check_radar(self, degree, game_map):
         length = 0
+        map_w, map_h = game_map.get_size()
+
         while length < 300:
             x = int(self.center[0] + math.cos(math.radians(360 - (self.angle + degree))) * length)
             y = int(self.center[1] + math.sin(math.radians(360 - (self.angle + degree))) * length)
 
-            if x < 0 or x >= WIDTH or y < 0 or y >= HEIGHT:
+            if x < 0 or x >= map_w or y < 0 or y >= map_h:
                 break
 
             if game_map.get_at((x, y))[:3] == BORDER_COLOR:
@@ -73,17 +102,27 @@ class Car:
 
             length += 2
 
-        dist = int(math.sqrt((x - self.center[0])**2 + (y - self.center[1])**2))
+        dist = int(math.sqrt((x - self.center[0]) ** 2 + (y - self.center[1]) ** 2))
         self.radars.append([(x, y), dist])
         return dist
 
-    def draw_radars(self, screen, font):
+    def draw_radars(self, screen, font, scale, offset_x, offset_y):
+        center_draw = (
+            int(self.center[0] * scale + offset_x),
+            int(self.center[1] * scale + offset_y)
+        )
+
         for radar in self.radars:
-            pygame.draw.line(screen, (0, 255, 0), self.center, radar[0], 2)
-            pygame.draw.circle(screen, (0, 255, 0), radar[0], 5)
+            radar_draw = (
+                int(radar[0][0] * scale + offset_x),
+                int(radar[0][1] * scale + offset_y)
+            )
+
+            pygame.draw.line(screen, (0, 255, 0), center_draw, radar_draw, 2)
+            pygame.draw.circle(screen, (0, 255, 0), radar_draw, max(2, int(5 * scale)))
 
             text = font.render(str(radar[1]), True, (255, 0, 0))
-            screen.blit(text, (radar[0][0] + 5, radar[0][1] - 5))
+            screen.blit(text, (radar_draw[0] + 5, radar_draw[1] - 5))
 
 
 def main():
@@ -100,23 +139,42 @@ def main():
     font_big = pygame.font.SysFont("Arial", 28)
 
     car = Car()
-    game_map = pygame.image.load('map.png').convert()
 
-    # Temporaere Daten
+    # Ursprüngliche Karte: nur für die Logikberechnung, nicht skalieren
+    game_map = pygame.image.load('map3.png').convert()
+    map_w, map_h = game_map.get_size()
+
+    # Anzeigekarte: nur für die Darstellung, proportional skaliert
+    scale = min(WIDTH / map_w, HEIGHT / map_h)
+    display_w = int(map_w * scale)
+    display_h = int(map_h * scale)
+
+    display_map = pygame.transform.scale(game_map, (display_w, display_h))
+    offset_x = (WIDTH - display_w) // 2
+    offset_y = (HEIGHT - display_h) // 2
+
+    # Temporäre Daten des aktuellen Durchlaufs
     current_run_data = []
 
-    # Dateipfad Trainingsdaten
-    file_path = os.path.join(os.path.dirname(__file__), "..", "ai", "data_file", "training_data.csv")
+    # Dateipfad für die Trainingsdaten
+    file_path = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "ai",
+        "data_file",
+        "training_data_map3.csv"
+    )
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
     running = True
     while running:
-        screen.blit(game_map, (0, 0))
+        screen.fill((0, 0, 0))
+        screen.blit(display_map, (offset_x, offset_y))
 
         car.update(game_map)
-        car.draw(screen, font_small)
+        car.draw(screen, font_small, scale, offset_x, offset_y)
 
-        # Sensoranzeige
+        # Anzeige der Sensorwerte
         sensor_text = "Sensorwerte: " + ", ".join(str(v) for v in car.radar_values)
         text_surface = font_big.render(sensor_text, True, (255, 255, 0))
         screen.blit(text_surface, (50, 50))
@@ -126,7 +184,7 @@ def main():
 
         keys = pygame.key.get_pressed()
 
-        # Steuerung
+        # Steuerung des Autos
         actions = []
         if keys[pygame.K_w]:
             car.speed = 5
@@ -148,22 +206,21 @@ def main():
         # Daten sammeln
         if car.alive and actions:
             data = car.radar_values + ["+".join(actions)]
-            if not current_run_data or current_run_data[-1] != data: # Doppelte Daten hintereinander
+            if not current_run_data or current_run_data[-1] != data:
                 current_run_data.append(data)
-                
 
-        # Temporaere Daten verwerfen beim Crash
+        # Nach einem Crash die temporären Daten dieses Durchlaufs verwerfen
         if not car.alive:
             current_run_data.clear()
 
-        # Event-Handling
+        # Ereignisbehandlung
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key in [pygame.K_ESCAPE, pygame.K_q]:
                     running = False
-                elif event.key == pygame.K_p:  # Daten mit Taste P speichern
+                elif event.key == pygame.K_p:
                     with open(file_path, "a") as f:
                         for row in current_run_data:
                             line = ",".join(map(str, row))
