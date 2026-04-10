@@ -1,13 +1,18 @@
 import pandas as pd # Pandas dient zur Datenverarbeitung und -analyse, unter anderem zum Einlesen von CSV-Dateien
 
-def load_data(file_path, n_train = 1400):
+def load_data(file_path, n_train = 1600):
     data = pd.read_csv("data_file/training_data.csv") # Trainingsdaten auslesen
     print(data.head()) # Erste 6 Zeilen der Trainingsdaten printen
 
     data.columns = ["r_right", "r_right_front", "r_front", "r_left_front", "r_left", "action"] # Spaltennamen der Trainingsdaten festlegen
 
+    """
     mapping = { # Mapping der Aktionen zu numerischen Werten fuer TensorFlow
         "W": 0, "A": 1, "S": 2, "D": 3, "W+A": 4, "W+D": 5,"S+A": 6, "S+D": 7
+    }
+    """
+    mapping = { # Mapping der Aktionen zu numerischen Werten fuer TensorFlow
+        "W": 0, "A": 1, "D": 2, "W+A": 3, "W+D": 4
     }
 
     data["action"] = data["action"].map(mapping) # Aktionen in numerische Werte umwandeln

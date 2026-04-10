@@ -13,7 +13,7 @@ def main():
     os.environ["SDL_RENDER_DRIVER"] = "opengl"
     pygame.init()
     
-    screen, game_map, display_map, scale, offset_x, offset_y = load_map("map.png", WIDTH, HEIGHT)
+    screen, game_map, display_map, scale, offset_x, offset_y = load_map("map3.png", WIDTH, HEIGHT)
     pygame.display.set_caption("Car mit Sensoren")
     clock = pygame.time.Clock()
     font_small = pygame.font.SysFont("Arial", 24)
@@ -23,7 +23,7 @@ def main():
 
     model = tf.keras.models.load_model('../ai/models_file/model.h5')  # KI-Modell laden
 
-    running = True
+    running = True  
     while running:
         screen.fill((0, 0, 0))
         screen.blit(display_map, (offset_x, offset_y))
@@ -52,13 +52,13 @@ def main():
         # Steuerung des Autos
         car.speed = 0
         if "W" in actions:
-            car.speed = 10 # Speed bis 20 moeglich
+            car.speed = 5 # Speed bis 20 moeglich
         if "S" in actions:
             car.speed = -5
         if "A" in actions:
-            car.angle += 3
+            car.angle += 5
         if "D" in actions:
-            car.angle -= 3
+            car.angle -= 5
 
         pygame.display.flip()
         clock.tick(60)
