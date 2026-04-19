@@ -13,7 +13,7 @@ def main():
     os.environ["SDL_RENDER_DRIVER"] = "opengl"
     pygame.init()
     
-    screen, game_map, display_map, scale, offset_x, offset_y = load_map("map3.png", WIDTH, HEIGHT)
+    screen, game_map, display_map, scale, offset_x, offset_y = load_map("map5.png", WIDTH, HEIGHT)
     pygame.display.set_caption("Car mit Sensoren")
     clock = pygame.time.Clock()
     font_small = pygame.font.SysFont("Arial", 24)
@@ -21,7 +21,7 @@ def main():
 
     car = Car()
 
-    model = tf.keras.models.load_model('../ai/models_file/model.h5')  # KI-Modell laden
+    model = tf.keras.models.load_model('../ai/models_file/model5.keras')  # KI-Modell laden
 
     running = True  
     while running:
@@ -39,7 +39,9 @@ def main():
             pred = model(x_input, training=False)     # Einfacher Forward-Pass, ohne Schleifen ueber Daten, Dataset-Handling etc. 
             action_index = np.argmax(pred[0])         # Tasten-Index der höchsten Wahrscheinlichkeit
 
-            mapping = {0: "W", 1: "A", 2: "S", 3: "D", 4: "W+A", 5: "W+D", 6: "S+A", 7: "S+D"}
+            #mapping = {0: "W", 1: "A", 2: "S", 3: "D", 4: "W+A", 5: "W+D", 6: "S+A", 7: "S+D"}
+            mapping = {0: "W", 1: "A", 2: "D", 3: "W+A", 4: "W+D"}
+
             actions = mapping[action_index].split("+")  # Liste mit Aktionstasten, mehrere Tasteneingaben werden gesplittet
         else: #Beim Crash ist InputArray leer, dadurch Programmabsturz, fuer die Zeit kein predict
             actions = ["W"]
@@ -52,7 +54,7 @@ def main():
         # Steuerung des Autos
         car.speed = 0
         if "W" in actions:
-            car.speed = 5 # Speed bis 20 moeglich
+            car.speed = 5 
         if "S" in actions:
             car.speed = -5
         if "A" in actions:

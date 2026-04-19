@@ -11,7 +11,7 @@ def main():
     os.environ["SDL_RENDER_DRIVER"] = "opengl"
     pygame.init()
     
-    screen, game_map ,display_map, scale, offset_x, offset_y = load_map("map.png", WIDTH, HEIGHT)
+    screen, game_map ,display_map, scale, offset_x, offset_y = load_map("map5.png", WIDTH, HEIGHT)
     pygame.display.set_caption("Car mit Sensoren")
     clock = pygame.time.Clock()
     font_small = pygame.font.SysFont("Arial", 24)
@@ -29,7 +29,7 @@ def main():
         "..",
         "ai",
         "data_file",
-        "training_data_map.csv"
+        "training_data_map5_2.csv"
     )
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
@@ -91,7 +91,9 @@ def main():
                     with open(file_path, "a") as f:
                         for row in current_run_data:
                             line = ",".join(map(str, row))
-                            f.write(line + "\n")
+
+                            if len(row) == 6:
+                                f.write(line + "\n")
                     print("Runde gespeichert!")
                     current_run_data.clear()
 
