@@ -3,17 +3,38 @@ import sys
 import os
 import tensorflow as tf
 import numpy as np
+from pathlib import Path
+
 from car import Car
 from map_loader import load_map
 
-WIDTH = 1920
-HEIGHT = 1080
+# Projektwurzel SW_Project
+ROOT_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(str(ROOT_DIR))
+
+from Config.config_loader import load_config
+
+config = load_config()
+ai_cfg = config["ai_run"]
+
+def get_screen_size(cfg):
+    pygame.init()
+    info = pygame.display.Info()
+
+    if cfg["width"] == "auto" or cfg["height"] == "auto":
+        return info.current_w, info.current_h
+
+    return cfg["width"], cfg["height"]
+
+WIDTH, HEIGHT = get_screen_size(ai_cfg)
 
 def main():
     os.environ["SDL_RENDER_DRIVER"] = "opengl"
     pygame.init()
-    
-    screen, game_map, display_map, scale, offset_x, offset_y = load_map("map5.png", WIDTH, HEIGHT)
+
+    screen, game_map, display_map, scale, offset_x, offset_y = load_map(
+        ai_cfg["map_file"], WIDTH, HEIGHT
+    )
     pygame.display.set_caption("Car mit Sensoren")
     clock = pygame.time.Clock()
     font_small = pygame.font.SysFont("Arial", 24)
@@ -21,9 +42,10 @@ def main():
 
     car = Car()
 
-    model = tf.keras.models.load_model('../ai/models_file/model5.keras')  # KI-Modell laden
+    # KI-Modell laden
+    model = tf.keras.models.load_model(ai_cfg["model_path"])
 
-    running = True  
+    running = True
     while running:
         screen.fill((0, 0, 0))
         screen.blit(display_map, (offset_x, offset_y))
@@ -33,17 +55,14 @@ def main():
 
         # KI-Modell
         if len(car.radar_values) == 5:
-            x_input = np.array(car.radar_values, dtype=np.float32).reshape(1, -1) / 300.0  # reshape der Radarwerte und Normalisierung
-          
-            #pred = model.predict(x_input, verbose=0) # Keine Predict-Ausgabe in der Konsole # Starke Performanceeinbrueche durch predict, wahrscheinlich durch 60 Aufrufe pro Minute
-            pred = model(x_input, training=False)     # Einfacher Forward-Pass, ohne Schleifen ueber Daten, Dataset-Handling etc. 
-            action_index = np.argmax(pred[0])         # Tasten-Index der höchsten Wahrscheinlichkeit
+            x_input = np.array(car.radar_values, dtype=np.float32).reshape(1, -1) / 298.0
 
-            #mapping = {0: "W", 1: "A", 2: "S", 3: "D", 4: "W+A", 5: "W+D", 6: "S+A", 7: "S+D"}
+            pred = model(x_input, training=False)
+            action_index = np.argmax(pred[0])
+
             mapping = {0: "W", 1: "A", 2: "D", 3: "W+A", 4: "W+D"}
-
-            actions = mapping[action_index].split("+")  # Liste mit Aktionstasten, mehrere Tasteneingaben werden gesplittet
-        else: #Beim Crash ist InputArray leer, dadurch Programmabsturz, fuer die Zeit kein predict
+            actions = mapping[action_index].split("+")
+        else:  # Beim Crash ist InputArray leer, dadurch Programmabsturz, fuer die Zeit kein predict
             actions = ["W"]
 
         # Anzeige der Sensorwerte
@@ -54,13 +73,13 @@ def main():
         # Steuerung des Autos
         car.speed = 0
         if "W" in actions:
-            car.speed = 5 
+            car.speed = ai_cfg["forward_speed"]
         if "S" in actions:
-            car.speed = -5
+            car.speed = ai_cfg["backward_speed"]
         if "A" in actions:
-            car.angle += 5
+            car.angle += ai_cfg["turn_angle"]
         if "D" in actions:
-            car.angle -= 5
+            car.angle -= ai_cfg["turn_angle"]
 
         pygame.display.flip()
         clock.tick(60)
