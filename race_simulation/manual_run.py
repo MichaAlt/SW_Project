@@ -1,17 +1,36 @@
 import pygame
 import sys
 import os
+
+from pathlib import Path
 from car import Car
 from map_loader import load_map
 
-WIDTH = 1920
-HEIGHT = 1080
+# Projektwurzel SW_Project
+ROOT_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(str(ROOT_DIR))
+
+from Config.config_loader import load_config
+
+config = load_config()
+manual_cfg = config["manual_run"]
+
+def get_screen_size(cfg):
+    pygame.init()
+    info = pygame.display.Info()
+
+    if cfg["width"] == "auto" or cfg["height"] == "auto":
+        return info.current_w, info.current_h
+
+    return cfg["width"], cfg["height"]
+
+WIDTH, HEIGHT = get_screen_size(manual_cfg)
 
 def main():
     os.environ["SDL_RENDER_DRIVER"] = "opengl"
     pygame.init()
     
-    screen, game_map ,display_map, scale, offset_x, offset_y = load_map("map5.png", WIDTH, HEIGHT)
+    screen, game_map ,display_map, scale, offset_x, offset_y = load_map(manual_cfg["map_file"], WIDTH, HEIGHT)
     pygame.display.set_caption("Car mit Sensoren")
     clock = pygame.time.Clock()
     font_small = pygame.font.SysFont("Arial", 24)
@@ -26,10 +45,7 @@ def main():
     # Dateipfad für die Trainingsdaten
     file_path = os.path.join(
         os.path.dirname(__file__),
-        "..",
-        "ai",
-        "data_file",
-        "training_data_map5_2.csv"
+        manual_cfg["data_save_path"]
     )
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
@@ -54,20 +70,20 @@ def main():
         # Steuerung des Autos
         actions = []
         if keys[pygame.K_w]:
-            car.speed = 5
+            car.speed = manual_cfg["forward_speed"]
             actions.append("W")
         elif keys[pygame.K_s]:
-            car.speed = -5
+            car.speed = manual_cfg["backward_speed"]
             actions.append("S")
         else:
             if car.alive:
                 car.speed = 0
 
         if keys[pygame.K_a]:
-            car.angle += 3
+            car.angle += manual_cfg["turn_angle"]
             actions.append("A")
         if keys[pygame.K_d]:
-            car.angle -= 3
+            car.angle -= manual_cfg["turn_angle"]
             actions.append("D")
 
         # Daten sammeln

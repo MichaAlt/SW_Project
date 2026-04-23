@@ -14,9 +14,10 @@ config = load_config()
 train_cfg = config["train"]
 
 # Trainingsdaten aus der Konfigurationsdatei laden
-x_train, y_train, x_test, y_test = load_data(
+train_ds, test_ds = load_data(
     train_cfg["data_file"],
-    train_cfg["n_train"]
+    train_cfg["n_train"],
+    train_cfg["batch_size"]
 )
 
 # Modell erstellen
@@ -25,15 +26,14 @@ model = create_model()
 # Modell trainieren
 print("Modell trainieren...")
 model.fit(
-    x_train,
-    y_train,
+    train_ds,
     epochs=train_cfg["epochs"],
-    batch_size=train_cfg["batch_size"]
+    #batch_size=train_cfg["batch_size"]
 )
 
 # Modell evaluieren
 print("\nModell evaluieren:")
-loss, acc = model.evaluate(x_test, y_test)
+loss, acc = model.evaluate(test_ds)
 print("Test Accuracy:", acc, "Test Loss:", loss)
 
 # Modell speichern

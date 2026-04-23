@@ -22,7 +22,7 @@ def create_model(input_shape=(5,), num_classes= 5):
     ])
 
     """
-    # Modell ohne BatchNormalization-Layer
+    # Modell mit normalen Layern
     model = tf.keras.Sequential([ 
         tf.keras.layers.Input(shape=input_shape), # Input Layer mit 5 Features
         tf.keras.layers.Dense(256, activation="relu"), # 1. Hidden Layer
