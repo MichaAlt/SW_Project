@@ -54,7 +54,7 @@ def main():
         screen.fill((0, 0, 0))
         screen.blit(display_map, (offset_x, offset_y))
 
-        car.update(display_map)
+        car.update(game_map)
         car.draw(screen, font_small, scale, offset_x, offset_y)
 
         # Anzeige der Sensorwerte

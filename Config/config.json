@@ -1,20 +1,20 @@
 {
   "train": {
-    "data_file": "data_file/training_data_map5_2.csv",
-    "n_train": 3000,
+    "data_file": "data_file/training_data_combined.csv",
+    "n_train": 15000,
     "epochs": 150,
-    "batch_size": 30,
-    "model_save_path": "models_file/model5_sgd.keras",
-    "model_type": 1
+    "batch_size": 100,
+    "model_save_path": "models_file/model_combined.keras",
+    "model_type": 2
   },
 
   "model": {
-    "optimizer": "sgd" 
+    "optimizer": "adam" 
   },
 
   "ai_run": {
-    "map_file": "PNG_File/map5.png",
-    "model_path": "../ai/models_file/model5_sgd.keras",
+    "map_file": "PNG_File/map2.png",
+    "model_path": "../ai/models_file/model_combined.keras",
     "width": "auto",
     "height": "auto",
     "forward_speed": 5,
@@ -23,8 +23,8 @@
   },
 
   "manual_run": {
-    "map_file": "PNG_file/map5.png",
-    "data_save_path": "../ai/data_file/training_data_map5_test.csv",
+    "map_file": "PNG_File/map.png",
+    "data_save_path": "../ai/data_file/training_data.csv",
     "width": "auto",
     "height": "auto",
     "forward_speed": 5,
