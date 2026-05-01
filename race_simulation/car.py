@@ -10,7 +10,7 @@ START_ANGLE = 0
 
 class Car:
     def __init__(self):
-        self.sprite = pygame.image.load('car.png').convert_alpha()
+        self.sprite = pygame.image.load('PNG_File/car.png').convert_alpha()
         self.sprite = pygame.transform.scale(self.sprite, (CAR_SIZE_X, CAR_SIZE_Y))
         self.reset()
 

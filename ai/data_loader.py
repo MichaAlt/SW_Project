@@ -65,3 +65,4 @@ def load_data(file_path, n_train=3000, batch_size=30):
     test_ds = test_ds.batch(batch_size).shuffle(buffer_size=len(test_ds))
 
     return train_ds, test_ds
+

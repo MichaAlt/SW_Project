@@ -1,3 +1,4 @@
+import tensorflow as tf
 from pathlib import Path
 import sys
 
@@ -13,6 +14,24 @@ from Config.config_loader import load_config
 config = load_config()
 train_cfg = config["train"]
 
+
+# Callback-Klasse definieren
+class OverfittingCallback(tf.keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs=None):
+        train_acc = logs.get('SparseCategoricalAccuracy')
+        val_acc = logs.get('val_SparseCategoricalAccuracy')
+
+        if train_acc and val_acc:
+            gap = train_acc - val_acc
+
+            # Overfitting, wenn der Gap zwischen Training- und Validierung - Accuracy größer als 5%
+            if gap > 0.10:
+                print("\nTraining gestoppt, Overfitting! Gap: ", gap)
+                self.model.stop_training = True
+
+# Callback-Klasse initialisieren
+callbacks = OverfittingCallback()
+
 # Trainingsdaten aus der Konfigurationsdatei laden
 train_ds, test_ds = load_data(
     train_cfg["data_file"],
@@ -21,20 +40,22 @@ train_ds, test_ds = load_data(
 )
 
 # Modell erstellen
-model = create_model()
+model = create_model(model_type=train_cfg["model_type"])
 
 # Modell trainieren
 print("Modell trainieren...")
-model.fit(
+history = model.fit(
     train_ds,
     epochs=train_cfg["epochs"],
     #batch_size=train_cfg["batch_size"]
+    validation_data = test_ds,
+    callbacks=[callbacks]
 )
 
 # Modell evaluieren
-print("\nModell evaluieren:")
-loss, acc = model.evaluate(test_ds)
-print("Test Accuracy:", acc, "Test Loss:", loss)
+# print("\nModell evaluieren:")
+# loss, acc = model.evaluate(test_ds)
+# print("Test Accuracy:", acc, "Test Loss:", loss)
 
 # Modell speichern
 model.save(train_cfg["model_save_path"])
