@@ -12,11 +12,6 @@ from Config.config_loader import load_config
 config = load_config()
 model_config = config["model"]
 
-# Ueberlegung fuer das Modell:
-    # 1: 4 Ausgabewerte (W, A, S, D), Ausgabelayer mit Sigmoid-Aktivierungsfunktion da es sich um eine MultiLabel-Ausgabe handelt (mehrere Ausgaben gleichzeitig moeglich) (One-Hot-Codierung?)
-    # 2: Mapping der Aktionen zu einem einzigen Wert (z.B. W=0, A=1, S=2, D=3, W+A=4, W+D=5, S+A=6, S+D=7) und Verwendung von Softmax-Aktivierungsfunktion im Ausgabelayer, 
-    #    nur eine Aktion pro Schritt moeglich (nur eine Ausgabe moeglich)
-
 
 # Funktion zum erstellen des Modells mit 5 Input-Knoten und 8 Ausgabe-Knoten
 def create_model(model_type, input_shape=(5,), num_classes= 5): 

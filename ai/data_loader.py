@@ -56,11 +56,11 @@ def load_data(file_path, n_train=3000, batch_size=30):
     # Gesamtdataset bauen
     ds = tf.data.Dataset.from_tensor_slices((x, y))
 
-    # Train / Test Split direkt im Dataset
+    # Train/Test Split
     train_ds = ds.take(n_train)
     test_ds = ds.skip(n_train)
 
-    
+    # Batch-Size festlegen und Daten mischen
     train_ds = train_ds.batch(batch_size).shuffle(buffer_size=len(train_ds))
     test_ds = test_ds.batch(batch_size).shuffle(buffer_size=len(test_ds))
 

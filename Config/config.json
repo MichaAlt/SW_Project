@@ -1,6 +1,6 @@
 {
   "train": {
-    "data_file": "data_file/training_data_combined.csv",
+    "data_file": "data_file/supervised_data/training_data_combined.csv",
     "n_train": 15000,
     "epochs": 150,
     "batch_size": 100,
@@ -19,16 +19,18 @@
     "height": "auto",
     "forward_speed": 5,
     "backward_speed": -5,
-    "turn_angle": 3
+    "turn_angle": 3,
+    "turn_angle_soft": 1
   },
 
   "manual_run": {
     "map_file": "PNG_File/map.png",
-    "data_save_path": "../ai/data_file/training_data.csv",
+    "data_save_path": "../ai/data_file/supervised_data/training_data.csv",
     "width": "auto",
     "height": "auto",
     "forward_speed": 5,
     "backward_speed": -5,
-    "turn_angle": 3
+    "turn_angle": 3,
+    "turn_angle_soft": 1
   }
 }
