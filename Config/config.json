@@ -1,6 +1,6 @@
 {
   "train": {
-    "data_file": "data_file/supervised_data/training_data_map5_2.csv",
+    "data_file": "data_file/mehrklassifikation_data/training_data_map5_2.csv",
     "n_train": 3000,
     "epochs": 150,
     "batch_size": 30,
@@ -25,7 +25,7 @@
 
   "manual_run": {
     "map_file": "PNG_File/map.png",
-    "data_save_path": "../ai/data_file/supervised_data/training_data.csv",
+    "data_save_path": "../ai/data_file/mehrklassifikation_data/training_data.csv",
     "width": "auto",
     "height": "auto",
     "forward_speed": 5,
