@@ -25,7 +25,7 @@ class OverfittingCallback(tf.keras.callbacks.Callback):
             gap = train_acc - val_acc
 
             # Overfitting, wenn der Gap zwischen Training- und Validierung - Accuracy größer als 5%
-            if gap > 0.10:
+            if gap > 0.05:
                 print("\nTraining gestoppt, Overfitting! Gap: ", gap)
                 self.model.stop_training = True
 
@@ -33,14 +33,14 @@ class OverfittingCallback(tf.keras.callbacks.Callback):
 callbacks = OverfittingCallback()
 
 # Trainingsdaten aus der Konfigurationsdatei laden
-train_ds, test_ds = load_data(
+train_ds, test_ds, train_ds_features = load_data(
     train_cfg["data_file"],
     train_cfg["n_train"],
     train_cfg["batch_size"]
 )
 
 # Modell erstellen
-model = create_model(model_type=train_cfg["model_type"])
+model = create_model(model_type=train_cfg["model_type"], train_ds_features = train_ds_features)
 
 # Modell trainieren
 print("Modell trainieren...")

@@ -52,6 +52,8 @@ def load_data(file_path, n_train=3000, batch_size=30):
 
     # Normalisierung
     x = x / 298.0
+    # Standardisieren
+    #x = (x - x.mean()) / x.std()
 
     # Gesamtdataset bauen
     ds = tf.data.Dataset.from_tensor_slices((x, y))
@@ -59,10 +61,12 @@ def load_data(file_path, n_train=3000, batch_size=30):
     # Train/Test Split
     train_ds = ds.take(n_train)
     test_ds = ds.skip(n_train)
+    
+    train_ds_features = ds.take(n_train).map(lambda x, y: x).batch(batch_size)
 
     # Batch-Size festlegen und Daten mischen
     train_ds = train_ds.batch(batch_size).shuffle(buffer_size=len(train_ds))
     test_ds = test_ds.batch(batch_size).shuffle(buffer_size=len(test_ds))
 
-    return train_ds, test_ds
+    return train_ds, test_ds, train_ds_features
 
