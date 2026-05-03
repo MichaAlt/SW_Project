@@ -32,6 +32,19 @@ def load_data(file_path, n_train=3000):
 
 import pandas as pd
 import tensorflow as tf
+from pathlib import Path
+import sys
+
+
+# Projektwurzel SW_Project
+ROOT_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(str(ROOT_DIR))
+
+from Config.config_loader import load_config
+
+config = load_config()
+feature_scaling_cfg = config["feature_scaling"]
+
 
 def load_data(file_path, n_train=3000, batch_size=30):
 
@@ -50,10 +63,10 @@ def load_data(file_path, n_train=3000, batch_size=30):
     x = data.drop("action", axis=1).values
     y = data["action"].values
 
-    # Normalisierung
-    x = x / 298.0
-    # Standardisieren
-    #x = (x - x.mean()) / x.std()
+    if feature_scaling_cfg["method"] == 1: # Normalisieren
+        x = x / 298.0
+    elif feature_scaling_cfg["method"] == 2: # Standardisieren
+        x = (x - x.mean()) / x.std() 
 
     # Gesamtdataset bauen
     ds = tf.data.Dataset.from_tensor_slices((x, y))
@@ -69,4 +82,3 @@ def load_data(file_path, n_train=3000, batch_size=30):
     test_ds = test_ds.batch(batch_size).shuffle(buffer_size=len(test_ds))
 
     return train_ds, test_ds, train_ds_features
-

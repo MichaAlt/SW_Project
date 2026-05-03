@@ -1,36 +1,40 @@
 {
   "train": {
-    "data_file": "data_file/mehrklassifikation_data/training_data_map5_2.csv",
+    "data_file": "data_file/regression_data/training_data_5.csv",
     "n_train": 3000,
     "epochs": 150,
     "batch_size": 30,
-    "model_save_path": "models_file/model_standardisation.keras",
-    "model_type": 1
+    "model_save_path": "models_file/regression_models/model_regression.keras",
+    "model_type": 2
   },
 
   "model": {
-    "optimizer": "sgd" 
+    "optimizer": "adam" 
   },
 
   "ai_run": {
     "map_file": "PNG_File/map5.png",
-    "model_path": "../ai/models_file/model_standardisation.keras",
+    "model_path": "../ai/models_file/regression_models/model_regression.keras",
     "width": "auto",
     "height": "auto",
     "forward_speed": 5,
     "backward_speed": -5,
-    "turn_angle": 3,
-    "turn_angle_soft": 1
+    "turn_angle": 3
   },
 
   "manual_run": {
-    "map_file": "PNG_File/map.png",
-    "data_save_path": "../ai/data_file/mehrklassifikation_data/training_data.csv",
+    "map_file": "PNG_File/map5.png",
+    "data_save_path": "../ai/data_file/regression_data/training_data_5.csv",
     "width": "auto",
     "height": "auto",
     "forward_speed": 5,
     "backward_speed": -5,
     "turn_angle": 3,
-    "turn_angle_soft": 1
+    "turn_angle_soft": 1.5
+  },
+
+  "feature_scaling": 
+  {
+    "method" : 1
   }
 }

@@ -79,20 +79,21 @@ def main():
         else:
             if car.alive:
                 car.speed = 0
+                actions.append(car.speed)
 
-        if keys[pygame.K_a] and not keys[pygame.K_LSHIFT]: # Links Lenken
+        if keys[pygame.K_a] and keys[pygame.K_LSHIFT]: # Links Lenken
             car.angle += manual_cfg["turn_angle"]
             actions.append(+manual_cfg["turn_angle"])
         else:
-            if keys[pygame.K_a] and keys[pygame.K_LSHIFT]: # Sanftes Links Lenken
+            if keys[pygame.K_a] and not keys[pygame.K_LSHIFT]: # Sanftes Links Lenken
                 car.angle += manual_cfg["turn_angle_soft"]
                 actions.append(+manual_cfg["turn_angle_soft"])
 
-        if keys[pygame.K_d] and not keys[pygame.K_LSHIFT]: # Rechts Lenken
+        if keys[pygame.K_d] and keys[pygame.K_LSHIFT]: # Rechts Lenken
             car.angle -= manual_cfg["turn_angle"]
             actions.append(-manual_cfg["turn_angle"])
         else:
-            if keys[pygame.K_d] and keys[pygame.K_LSHIFT]: # Sanftes Rechts Lenken
+            if keys[pygame.K_d] and not keys[pygame.K_LSHIFT]: # Sanftes Rechts Lenken
                 car.angle -= manual_cfg["turn_angle_soft"]
                 actions.append(-manual_cfg["turn_angle_soft"])
 

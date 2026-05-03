@@ -2,8 +2,8 @@ import tensorflow as tf
 from pathlib import Path
 import sys
 
-from data_loader import load_data
-from model import create_model
+from data_loader_regression import load_data
+from model_regression import create_model
 
 # Projektwurzel SW_Project
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -18,16 +18,15 @@ train_cfg = config["train"]
 # Callback-Klasse definieren
 class OverfittingCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
-        train_acc = logs.get('SparseCategoricalAccuracy')
-        val_acc = logs.get('val_SparseCategoricalAccuracy')
+        train_loss = logs.get('mae')
+        val_loss = logs.get('val_mae')
 
-        if train_acc and val_acc:
-            gap = train_acc - val_acc
+        if train_loss is None or val_loss is None:
+            return
 
-            # Overfitting, wenn der Unterschied zwischen Trainingaccuracy und Validierungaccuracy größer als 5%
-            if gap > 0.05:
-                print("\nTraining gestoppt, Overfitting! Gap: ", gap)
-                self.model.stop_training = True
+        if val_loss > train_loss * 1.2:
+            print("\nTraining gestoppt: Overfitting erkannt")
+            self.model.stop_training = True
 
 # Callback-Klasse initialisieren
 callbacks = OverfittingCallback()

@@ -63,13 +63,13 @@ def main():
             elif feature_scaling_cfg["method"] == 2: # Standardisieren
                 x_input = (x_input - x_input.mean()) / x_input.std() 
 
-            pred = model(x_input, training=False)
-            action_index = np.argmax(pred[0])
+            pred = model(x_input, training=False)[0]
+            speed = float(pred[0]) # Tensor verursacht bei Regression-Vorhersage Perfomanceprobleme (FPS brechen ein), deshalb casting auf float
+            steer = float(pred[1])
 
-            mapping = {0: "W", 1: "A", 2: "D", 3: "W+A", 4: "W+D"}
-            actions = mapping[action_index].split("+")
         else:  # Beim Crash ist InputArray leer, dadurch Programmabsturz, fuer die Zeit kein predict
-            actions = ["W"]
+            speed = 0
+            steer = 0
 
         # Anzeige der Sensorwerte
         sensor_text = "Sensorwerte: " + ", ".join(str(v) for v in car.radar_values)
@@ -77,15 +77,8 @@ def main():
         screen.blit(text_surface, (50, 50))
 
         # Steuerung des Autos
-        car.speed = 0
-        if "W" in actions:
-            car.speed = ai_cfg["forward_speed"]
-        if "S" in actions:
-            car.speed = ai_cfg["backward_speed"]
-        if "A" in actions:
-            car.angle += ai_cfg["turn_angle"]
-        if "D" in actions:
-            car.angle -= ai_cfg["turn_angle"]
+        car.speed = speed
+        car.angle += steer
 
         pygame.display.flip()
         clock.tick(60)
