@@ -28,6 +28,24 @@ def get_screen_size(cfg):
 
 WIDTH, HEIGHT = get_screen_size(ai_cfg)
 
+def normalize_input(radar_values, pos_x, pos_y, angle):
+    x_input = np.array(
+        radar_values + [pos_x, pos_y, angle],
+        dtype=np.float32
+    ).reshape(1, -1)
+
+    # Radarwerte normalisieren
+    x_input[:, 0:5] = x_input[:, 0:5] / 298.0
+
+    # Positionswerte skalieren
+    x_input[:, 5] = x_input[:, 5] / 2000.0
+    x_input[:, 6] = x_input[:, 6] / 2000.0
+
+    # Winkel skalieren
+    x_input[:, 7] = x_input[:, 7] / 360.0
+
+    return x_input
+
 def main():
     os.environ["SDL_RENDER_DRIVER"] = "opengl"
     pygame.init()
@@ -44,42 +62,71 @@ def main():
 
     # KI-Modell laden
     model = tf.keras.models.load_model(ai_cfg["model_path"])
+    prev_dx = 0.0
+
+    prev_dy = 0.0
 
     running = True
     while running:
         screen.fill((0, 0, 0))
         screen.blit(display_map, (offset_x, offset_y))
 
+        if car.alive and len(car.radar_values) == 5:
+            x_input = normalize_input(
+                car.radar_values,
+                car.position[0],
+                car.position[1],
+                car.angle
+            )
+
+            pred = model(x_input, training=False)
+            raw_dx = float(pred[0][0])
+
+            raw_dy = float(pred[0][1])
+
+            dx = 0.1 * prev_dx + 0.9 * raw_dx
+
+            dy = 0.1 * prev_dy + 0.9 * raw_dy
+
+            prev_dx = dx
+
+            prev_dy = dy
+
+            target_angle = (-np.degrees(np.arctan2(dy, dx))) % 360
+            angle_diff = (target_angle - car.angle + 180) % 360 - 180
+        else:
+            dx = prev_dx
+            dy = prev_dy
+            target_angle = car.angle
+            angle_diff = 0.0
+
+        # Steuerung zuerst
+        car.speed = ai_cfg["forward_speed"]
+        max_turn = ai_cfg["max_turn_per_step"]
+
+        if angle_diff > max_turn:
+            car.angle += max_turn
+        elif angle_diff < -max_turn:
+            car.angle -= max_turn
+        else:
+            car.angle += angle_diff
+
+        # Danach erst Update und Zeichnen
         car.update(game_map)
         car.draw(screen, font_small, scale, offset_x, offset_y)
 
-        # KI-Modell
-        if len(car.radar_values) == 5:
-            x_input = np.array(car.radar_values, dtype=np.float32).reshape(1, -1) / 298.0
-
-            pred = model(x_input, training=False)
-            action_index = np.argmax(pred[0])
-
-            mapping = {0: "W", 1: "A", 2: "D", 3: "W+A", 4: "W+D"}
-            actions = mapping[action_index].split("+")
-        else:  # Beim Crash ist InputArray leer, dadurch Programmabsturz, fuer die Zeit kein predict
-            actions = ["W"]
-
-        # Anzeige der Sensorwerte
+        # Anzeige
         sensor_text = "Sensorwerte: " + ", ".join(str(v) for v in car.radar_values)
-        text_surface = font_big.render(sensor_text, True, (255, 255, 0))
-        screen.blit(text_surface, (50, 50))
+        sensor_surface = font_big.render(sensor_text, True, (255, 255, 0))
+        screen.blit(sensor_surface, (50, 50))
 
-        # Steuerung des Autos
-        car.speed = 0
-        if "W" in actions:
-            car.speed = ai_cfg["forward_speed"]
-        if "S" in actions:
-            car.speed = ai_cfg["backward_speed"]
-        if "A" in actions:
-            car.angle += ai_cfg["turn_angle"]
-        if "D" in actions:
-            car.angle -= ai_cfg["turn_angle"]
+        dxdy_text = f"dx: {dx:.3f}, dy: {dy:.3f}"
+        dxdy_surface = font_big.render(dxdy_text, True, (0, 255, 255))
+        screen.blit(dxdy_surface, (50, 90))
+
+        angle_text = f"Target angle: {target_angle:.2f}, car.angle: {car.angle:.2f}, diff: {angle_diff:.2f}"
+        angle_surface = font_big.render(angle_text, True, (0, 255, 255))
+        screen.blit(angle_surface, (50, 130))
 
         pygame.display.flip()
         clock.tick(60)
@@ -94,7 +141,6 @@ def main():
 
     pygame.quit()
     sys.exit()
-
 
 if __name__ == "__main__":
     main()

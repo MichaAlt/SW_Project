@@ -1,6 +1,7 @@
 import pygame
 import sys
 import os
+from collections import deque
 
 from pathlib import Path
 from car import Car
@@ -30,7 +31,9 @@ def main():
     os.environ["SDL_RENDER_DRIVER"] = "opengl"
     pygame.init()
     
-    screen, game_map ,display_map, scale, offset_x, offset_y = load_map(manual_cfg["map_file"], WIDTH, HEIGHT)
+    screen, game_map, display_map, scale, offset_x, offset_y = load_map(
+        manual_cfg["map_file"], WIDTH, HEIGHT
+    )
     pygame.display.set_caption("Car mit Sensoren")
     clock = pygame.time.Clock()
     font_small = pygame.font.SysFont("Arial", 24)
@@ -38,9 +41,11 @@ def main():
 
     car = Car()
 
-   
     # Temporäre Daten des aktuellen Durchlaufs
     current_run_data = []
+
+    # Buffer für mehrere Zustände
+    state_buffer = deque(maxlen=6)  # aktueller Zustand + 5 Frames zurück
 
     # Dateipfad für die Trainingsdaten
     file_path = os.path.join(
@@ -54,7 +59,23 @@ def main():
         screen.fill((0, 0, 0))
         screen.blit(display_map, (offset_x, offset_y))
 
-        car.update(display_map)
+        keys = pygame.key.get_pressed()
+
+        # Steuerung des Autos
+        if keys[pygame.K_w]:
+            car.speed = manual_cfg["forward_speed"]
+        elif keys[pygame.K_s]:
+            car.speed = manual_cfg["backward_speed"]
+        else:
+            if car.alive:
+                car.speed = 0
+
+        if keys[pygame.K_a]:
+            car.angle += manual_cfg["turn_angle"]
+        if keys[pygame.K_d]:
+            car.angle -= manual_cfg["turn_angle"]
+
+        car.update(game_map)
         car.draw(screen, font_small, scale, offset_x, offset_y)
 
         # Anzeige der Sensorwerte
@@ -65,36 +86,36 @@ def main():
         pygame.display.flip()
         clock.tick(60)
 
-        keys = pygame.key.get_pressed()
+        # Daten sammeln: Zustand_t -> dx, dy zu Zustand_t+5
+        if car.alive and len(car.radar_values) == 5:
+            current_state = {
+                "radar": car.radar_values.copy(),
+                "x": car.position[0],
+                "y": car.position[1],
+                "angle": car.angle
+            }
 
-        # Steuerung des Autos
-        actions = []
-        if keys[pygame.K_w]:
-            car.speed = manual_cfg["forward_speed"]
-            actions.append("W")
-        elif keys[pygame.K_s]:
-            car.speed = manual_cfg["backward_speed"]
-            actions.append("S")
-        else:
-            if car.alive:
-                car.speed = 0
+            state_buffer.append(current_state)
 
-        if keys[pygame.K_a]:
-            car.angle += manual_cfg["turn_angle"]
-            actions.append("A")
-        if keys[pygame.K_d]:
-            car.angle -= manual_cfg["turn_angle"]
-            actions.append("D")
+            if len(state_buffer) == 20:
+                old_state = state_buffer[0]
+                new_state = state_buffer[-1]
 
-        # Daten sammeln
-        if car.alive and actions:
-            data = car.radar_values + ["+".join(actions)]
-            if not current_run_data or current_run_data[-1] != data:
-                current_run_data.append(data)
+                dx = new_state["x"] - old_state["x"]
+                dy = new_state["y"] - old_state["y"]
+
+                data = (
+                    old_state["radar"]
+                    + [old_state["x"], old_state["y"], old_state["angle"], dx, dy]
+                )
+
+                if not current_run_data or current_run_data[-1] != data:
+                    current_run_data.append(data)
 
         # Nach einem Crash die temporären Daten dieses Durchlaufs verwerfen
         if not car.alive:
             current_run_data.clear()
+            state_buffer.clear()
 
         # Ereignisbehandlung
         for event in pygame.event.get():
@@ -107,15 +128,14 @@ def main():
                     with open(file_path, "a") as f:
                         for row in current_run_data:
                             line = ",".join(map(str, row))
-
-                            if len(row) == 6:
+                            if len(row) == 10:
                                 f.write(line + "\n")
                     print("Runde gespeichert!")
                     current_run_data.clear()
+                    state_buffer.clear()
 
     pygame.quit()
     sys.exit()
-
 
 if __name__ == "__main__":
     main()
