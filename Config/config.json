@@ -1,11 +1,13 @@
 {
   "train": {
-    "data_file": "data_file/regression_data/training_data_5.csv",
+    "data_file_classification": "data_file/classification_data/training_data_combined.csv",
+    "data_file_regression": "data_file/regression_data/training_data_5.csv",
     "n_train": 3000,
     "epochs": 150,
     "batch_size": 30,
-    "model_save_path": "models_file/regression_models/model_regression.keras",
-    "model_type": 2
+    "model_save_path_classification": "models_file/classification_models/model_regression_test.keras",
+    "model_save_path_regression": "models_file/regression_models/model_regression_test.keras",
+    "model_type": 1
   },
 
   "model": {
@@ -14,7 +16,8 @@
 
   "ai_run": {
     "map_file": "PNG_File/map5.png",
-    "model_path": "../ai/models_file/regression_models/model_regression.keras",
+    "model_path_classification": "../ai/models_file/model_path_classification/model_regression_test.keras",
+    "model_path_regression": "../ai/models_file/regression_models/model_regression_test.keras",
     "width": "auto",
     "height": "auto",
     "forward_speed": 5,
@@ -24,7 +27,8 @@
 
   "manual_run": {
     "map_file": "PNG_File/map5.png",
-    "data_save_path": "../ai/data_file/regression_data/training_data_5.csv",
+    "data_save_path_classification": "../ai/data_file/classification_data/training_data.csv",
+    "data_save_path_regression" : "../ai/data_file/regression_data/training_data_5.csv",
     "width": "auto",
     "height": "auto",
     "forward_speed": 5,
@@ -36,5 +40,10 @@
   "feature_scaling": 
   {
     "method" : 1
-  }
+  },
+
+  "prediction":
+  {
+    "prediction": "regression"
+  } 
 }

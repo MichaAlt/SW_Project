@@ -14,6 +14,7 @@ from Config.config_loader import load_config
 
 config = load_config()
 manual_cfg = config["manual_run"]
+prediction_cfg = config["prediction"]
 
 def get_screen_size(cfg):
     pygame.init()
@@ -43,9 +44,15 @@ def main():
     current_run_data = []
 
     # Dateipfad für die Trainingsdaten
+    if prediction_cfg["prediction"] == "classification":
+        save_path = manual_cfg["data_save_path_classification"]
+
+    elif prediction_cfg["prediction"] == "regression":
+        save_path = manual_cfg["data_save_path_regression"]
+
     file_path = os.path.join(
         os.path.dirname(__file__),
-        manual_cfg["data_save_path"]
+        save_path
     )
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
@@ -69,26 +76,66 @@ def main():
 
         # Steuerung des Autos
         actions = []
-        if keys[pygame.K_w]:
-            car.speed = manual_cfg["forward_speed"]
-            actions.append("W")
-        elif keys[pygame.K_s]:
-            car.speed = manual_cfg["backward_speed"]
-            actions.append("S")
-        else:
-            if car.alive:
-                car.speed = 0
 
-        if keys[pygame.K_a]:
-            car.angle += manual_cfg["turn_angle"]
-            actions.append("A")
-        if keys[pygame.K_d]:
-            car.angle -= manual_cfg["turn_angle"]
-            actions.append("D")
+        if prediction_cfg["prediction"] == "classification":
+            if keys[pygame.K_w]:
+                car.speed = manual_cfg["forward_speed"]
+                actions.append("W")
+            elif keys[pygame.K_s]:
+                car.speed = manual_cfg["backward_speed"]
+                actions.append("S")
+            else:
+                if car.alive:
+                    car.speed = 0
+
+            if keys[pygame.K_a]:
+                car.angle += manual_cfg["turn_angle"]
+                actions.append("A")
+            if keys[pygame.K_d]:
+                car.angle -= manual_cfg["turn_angle"]
+                actions.append("D")
+
+        elif prediction_cfg["prediction"] == "regression":
+
+            if keys[pygame.K_w]:
+                car.speed = manual_cfg["forward_speed"]     # Vorwärts
+                actions.append(car.speed)
+
+            elif keys[pygame.K_s]:                          # Rückwärts
+                car.speed = manual_cfg["backward_speed"]
+                actions.append(car.speed)
+            else:
+                if car.alive:
+                    car.speed = 0
+                    actions.append(car.speed)
+
+            if keys[pygame.K_a] and keys[pygame.K_LSHIFT]: # Links Lenken
+                car.angle += manual_cfg["turn_angle"]
+                actions.append(+manual_cfg["turn_angle"])
+            else:
+                if keys[pygame.K_a] and not keys[pygame.K_LSHIFT]: # Sanftes Links Lenken
+                    car.angle += manual_cfg["turn_angle_soft"]
+                    actions.append(+manual_cfg["turn_angle_soft"])
+
+            if keys[pygame.K_d] and keys[pygame.K_LSHIFT]: # Rechts Lenken
+                car.angle -= manual_cfg["turn_angle"]
+                actions.append(-manual_cfg["turn_angle"])
+            else:
+                if keys[pygame.K_d] and not keys[pygame.K_LSHIFT]: # Sanftes Rechts Lenken
+                    car.angle -= manual_cfg["turn_angle_soft"]
+                    actions.append(-manual_cfg["turn_angle_soft"])
+
+            if not keys[pygame.K_a] and not keys[pygame.K_d]: # Nicht Lenken
+                actions.append(0)
+
 
         # Daten sammeln
         if car.alive and actions:
-            data = car.radar_values + ["+".join(actions)]
+            if prediction_cfg["prediction"] == "classification":
+                data = car.radar_values + ["+".join(actions)] # Mit Action bzw. Label als String
+            elif prediction_cfg["prediction"] == "regression":
+                data = car.radar_values + actions # Mit Action bzw. Label als Interger
+
             if not current_run_data or current_run_data[-1] != data:
                 current_run_data.append(data)
 
@@ -108,7 +155,12 @@ def main():
                         for row in current_run_data:
                             line = ",".join(map(str, row))
 
-                            if len(row) == 6:
+                            if prediction_cfg["prediction"] == "classification":
+                                row_len = 6 
+                            elif prediction_cfg["prediction"] == "regression":
+                                row_len = 7
+
+                            if len(row) == row_len:
                                 f.write(line + "\n")
                     print("Runde gespeichert!")
                     current_run_data.clear()

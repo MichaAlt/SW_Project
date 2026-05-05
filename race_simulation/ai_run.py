@@ -17,6 +17,8 @@ from Config.config_loader import load_config
 config = load_config()
 ai_cfg = config["ai_run"]
 feature_scaling_cfg = config["feature_scaling"]
+prediction_cfg = config["prediction"]
+
 
 def get_screen_size(cfg):
     pygame.init()
@@ -44,7 +46,10 @@ def main():
     car = Car()
 
     # KI-Modell laden
-    model = tf.keras.models.load_model(ai_cfg["model_path"])
+    if prediction_cfg["prediction"] == "classification":
+        model = tf.keras.models.load_model(ai_cfg["model_path_classification"])
+    elif prediction_cfg["prediction"] == "regression":
+        model = tf.keras.models.load_model(ai_cfg["model_path_regression"])
 
     running = True
     while running:
@@ -63,13 +68,25 @@ def main():
             elif feature_scaling_cfg["method"] == 2: # Standardisieren
                 x_input = (x_input - x_input.mean()) / x_input.std() 
 
-            pred = model(x_input, training=False)
-            action_index = np.argmax(pred[0])
 
-            mapping = {0: "W", 1: "A", 2: "D", 3: "W+A", 4: "W+D"}
-            actions = mapping[action_index].split("+")
+            pred = model(x_input, training=False)
+            if prediction_cfg["prediction"] == "classification":
+                action_index = np.argmax(pred[0])
+                mapping = {0: "W", 1: "A", 2: "D", 3: "W+A", 4: "W+D"}
+                actions = mapping[action_index].split("+")
+
+            elif prediction_cfg["prediction"] == "regression":
+                speed = float(pred[0][0]) # Tensor verursacht bei Regression-Vorhersage Perfomanceprobleme (FPS brechen ein), deshalb casting auf float
+                steer = float(pred[0][1])
+
+
+            
         else:  # Beim Crash ist InputArray leer, dadurch Programmabsturz, fuer die Zeit kein predict
-            actions = ["W"]
+            if prediction_cfg["prediction"] == "classification":
+                actions = ["W"]
+            elif prediction_cfg["prediction"] == "regression":
+                speed = 0
+                steer = 0
 
         # Anzeige der Sensorwerte
         sensor_text = "Sensorwerte: " + ", ".join(str(v) for v in car.radar_values)
@@ -78,14 +95,20 @@ def main():
 
         # Steuerung des Autos
         car.speed = 0
-        if "W" in actions:
-            car.speed = ai_cfg["forward_speed"]
-        if "S" in actions:
-            car.speed = ai_cfg["backward_speed"]
-        if "A" in actions:
-            car.angle += ai_cfg["turn_angle"]
-        if "D" in actions:
-            car.angle -= ai_cfg["turn_angle"]
+        if prediction_cfg["prediction"] == "classification":
+            if "W" in actions:
+                car.speed = ai_cfg["forward_speed"]
+            if "S" in actions:
+                car.speed = ai_cfg["backward_speed"]
+            if "A" in actions:
+                car.angle += ai_cfg["turn_angle"]
+            if "D" in actions:
+                car.angle -= ai_cfg["turn_angle"]
+        
+        elif prediction_cfg["prediction"] == "regression":
+            car.speed = speed
+            car.angle += steer
+
 
         pygame.display.flip()
         clock.tick(60)
