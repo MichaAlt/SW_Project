@@ -41,7 +41,7 @@ class OverfittingCallback(tf.keras.callbacks.Callback):
             if train_loss is None or val_loss is None:
                 return
 
-            if val_loss > train_loss * 1.2:
+            if val_loss > train_loss * 1.4:
                 print("\nTraining gestoppt: Overfitting erkannt")
                 self.model.stop_training = True
 
@@ -87,4 +87,4 @@ elif prediction_cfg["prediction"] == "regression":
     save_path = train_cfg["model_save_path_regression"]
 
 model.save(save_path)
-print(f"Modell gespeichert als {train_cfg['model_save_path']}")
+print(f"Modell gespeichert als {save_path}")
