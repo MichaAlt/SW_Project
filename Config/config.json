@@ -17,7 +17,7 @@
   "ai_run": {
     "map_file": "PNG_File/map3.png",
     "model_path_classification": "../ai/models_file/model_path_classification/model_regression_test.keras",
-    "model_path_regression": "../ai/models_file/regression_models/model_combined_1.keras",
+    "model_path_regression": "../ai/models_file/regression_models/model_combined.keras",
     "width": "auto",
     "height": "auto",
     "forward_speed": 5,
