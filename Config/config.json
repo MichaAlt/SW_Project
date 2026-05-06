@@ -1,25 +1,25 @@
 {
   "train": {
-    "data_file": "data_file/training_data_map5_test_xia2.csv",
-    "n_train": 1500,
+    "data_file": "data_file/training_data_map1_test_xia_8_auto.csv",
+    "n_train": 40000,
     "epochs": 150,
     "batch_size": 20,
-    "model_save_path": "models_file/model5_regression.keras"
+    "model_save_path": "models_file/model1_regression8_gut_1.keras"
   },
   "ai_run": {
     "map_file": "map5.png",
-    "model_path": "../ai/models_file/model5_regression.keras",
+    "model_path": "../ai/models_file/model1_regression8_gut_1.keras",
     "width": "auto",
     "height": "auto",
-    "forward_speed": 5,
-    "max_turn_per_step": 10
+    "forward_speed": 4,
+    "max_turn_per_step": 20
   },
   "manual_run": {
     "map_file": "map5.png",
-    "data_save_path": "../ai/data_file/training_data_map5_test_xia3.csv",
+    "data_save_path": "../ai/data_file/training_data_map1_test_xia_8_auto.csv",
     "width": "auto",
     "height": "auto",
-    "forward_speed": 5,
+    "forward_speed": 1,
     "turn_angle": 3
   }
 }

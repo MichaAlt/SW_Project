@@ -127,34 +127,27 @@ def load_data(file_path, n_train=3000):
         "dy"
     ]
 
+    data = data.sample(frac=1, random_state=42).reset_index(drop=True)
+
     data_train = data.iloc[:n_train]
     data_test = data.iloc[n_train:]
 
     x_train = data_train[
-        ["r_right", "r_right_front", "r_front", "r_left_front", "r_left", "pos_x", "pos_y", "angle"]
+        ["r_right", "r_right_front", "r_front", "r_left_front", "r_left", "angle"]
     ].values.astype("float32")
 
     y_train = data_train[["dx", "dy"]].values.astype("float32")
 
     x_test = data_test[
-        ["r_right", "r_right_front", "r_front", "r_left_front", "r_left", "pos_x", "pos_y", "angle"]
+        ["r_right", "r_right_front", "r_front", "r_left_front", "r_left", "angle"]
     ].values.astype("float32")
 
     y_test = data_test[["dx", "dy"]].values.astype("float32")
 
-    # Radarwerte normalisieren
     x_train[:, 0:5] = x_train[:, 0:5] / 298.0
     x_test[:, 0:5] = x_test[:, 0:5] / 298.0
 
-    # Positionswerte skalieren
-    x_train[:, 5] = x_train[:, 5] / 2000.0
-    x_test[:, 5] = x_test[:, 5] / 2000.0
-
-    x_train[:, 6] = x_train[:, 6] / 2000.0
-    x_test[:, 6] = x_test[:, 6] / 2000.0
-
-    # Winkel skalieren
-    x_train[:, 7] = x_train[:, 7] / 360.0
-    x_test[:, 7] = x_test[:, 7] / 360.0
+    x_train[:, 5] = x_train[:, 5] / 360.0
+    x_test[:, 5] = x_test[:, 5] / 360.0
 
     return x_train, y_train, x_test, y_test

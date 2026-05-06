@@ -36,7 +36,7 @@ def create_model(input_shape=(5,), num_classes= 5):
     
     return model
  """
-def create_model(input_shape=(8,)):
+def create_model(input_shape=(6,)):
 
     model = tf.keras.Sequential([
 
