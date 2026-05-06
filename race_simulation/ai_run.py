@@ -28,21 +28,17 @@ def get_screen_size(cfg):
 
 WIDTH, HEIGHT = get_screen_size(ai_cfg)
 
-def normalize_input(radar_values, pos_x, pos_y, angle):
+def normalize_input(radar_values, angle):
     x_input = np.array(
-        radar_values + [pos_x, pos_y, angle],
+        radar_values + [angle],
         dtype=np.float32
     ).reshape(1, -1)
 
     # Radarwerte normalisieren
     x_input[:, 0:5] = x_input[:, 0:5] / 298.0
 
-    # Positionswerte skalieren
-    x_input[:, 5] = x_input[:, 5] / 2000.0
-    x_input[:, 6] = x_input[:, 6] / 2000.0
-
     # Winkel skalieren
-    x_input[:, 7] = x_input[:, 7] / 360.0
+    x_input[:, 5] = x_input[:, 5] / 360.0
 
     return x_input
 
@@ -62,8 +58,8 @@ def main():
 
     # KI-Modell laden
     model = tf.keras.models.load_model(ai_cfg["model_path"])
-    prev_dx = 0.0
 
+    prev_dx = 0.0
     prev_dy = 0.0
 
     running = True
@@ -74,22 +70,33 @@ def main():
         if car.alive and len(car.radar_values) == 5:
             x_input = normalize_input(
                 car.radar_values,
-                car.position[0],
-                car.position[1],
                 car.angle
             )
 
             pred = model(x_input, training=False)
             raw_dx = float(pred[0][0])
-
             raw_dy = float(pred[0][1])
 
-            dx = 0.1 * prev_dx + 0.9 * raw_dx
+            # Roh-Ausgabe normieren
+            norm = (raw_dx ** 2 + raw_dy ** 2) ** 0.5 + 1e-8
+            raw_dx = raw_dx / norm
+            raw_dy = raw_dy / norm
 
-            dy = 0.1 * prev_dy + 0.9 * raw_dy
+            # Glättung
+            dx = 0.0 * prev_dx + 1.0 * raw_dx
+            dy = 0.0 * prev_dy + 1.0 * raw_dy
+
+            # Nach der Glättung erneut normieren
+            smooth_norm = (dx ** 2 + dy ** 2) ** 0.5 + 1e-8
+            dx = dx / smooth_norm
+            dy = dy / smooth_norm
+
+            print(
+                f"raw_dx={raw_dx:.3f}, raw_dy={raw_dy:.3f}, "
+                f"dx={dx:.3f}, dy={dy:.3f}"
+            )
 
             prev_dx = dx
-
             prev_dy = dy
 
             target_angle = (-np.degrees(np.arctan2(dy, dx))) % 360
