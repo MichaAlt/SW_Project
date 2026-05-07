@@ -1,4 +1,3 @@
-
 import tensorflow as tf 
 import sys
 from pathlib import Path
@@ -54,17 +53,7 @@ def create_model(model_type, train_ds_features, input_shape=(5,)):
                 tf.keras.layers.Dense(num_classes , activation=activation) # Ausgabe des Labels mit der hoechsten Wahrscheinlichkeit
             ])
 
-        case 3: # Input mit Normalizer-Layer standardisieren # Funktioniert bei Supervised Learning ueberhaupt nicht, bug?
-            normalizer = tf.keras.layers.Normalization(axis=-1) # axis: -1= Features seperat standardisieren, None: Alle Features gemeinsam standardisieren, 
-            normalizer.adapt(train_ds_features)
-        
-            model = tf.keras.Sequential([
-                tf.keras.layers.Input(shape=input_shape),
-                normalizer,
-                tf.keras.layers.Dense(64, activation="relu"),
-                tf.keras.layers.Dense(num_classes , activation=activation) 
-            ])
-        case 4:
+        case 3:
             # Modell mit Dropout Layern, um Overfitting vorzubeugen
             model = tf.keras.Sequential([ 
                 tf.keras.layers.Input(shape=input_shape), # Input Layer mit 5 Features
@@ -74,7 +63,8 @@ def create_model(model_type, train_ds_features, input_shape=(5,)):
                 tf.keras.layers.Dense(64, activation="relu"),  
                 tf.keras.layers.Dense(num_classes , activation=activation) 
             ])
-        case 5:
+            
+        case 4:
             # Modell mit L2-Regularisierung Layern, um Overfitting vorzubeugen
             model = tf.keras.Sequential([ 
                 tf.keras.layers.Input(shape=input_shape), # Input Layer mit 5 Features

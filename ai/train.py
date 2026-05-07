@@ -29,7 +29,7 @@ class OverfittingCallback(tf.keras.callbacks.Callback):
                 gap = train_acc - val_acc
 
                 # Overfitting, wenn der Unterschied zwischen Trainingaccuracy und Validierungaccuracy größer als 5%
-                if gap > 0.05:
+                if gap > 0.1:
                     print("\nTraining gestoppt, Overfitting! Gap: ", gap)
                     self.model.stop_training = True
                     

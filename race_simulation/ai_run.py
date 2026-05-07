@@ -66,7 +66,9 @@ def main():
             if feature_scaling_cfg["method"] == 1: # Normalisieren
                 x_input = x_input/ 298.0
             elif feature_scaling_cfg["method"] == 2: # Standardisieren
-                x_input = (x_input - x_input.mean()) / x_input.std() 
+                mean = np.load("../ai/data_file/mean.npy")
+                std = np.load("../ai/data_file/std.npy")
+                x_input = (x_input - mean) / std
 
 
             pred = model(x_input, training=False)

@@ -1,12 +1,12 @@
 {
   "train": {
     "data_file_classification": "data_file/classification_data/training_data_combined.csv",
-    "data_file_regression": "data_file/regression_data/training_data_5.csv",
-    "n_train": 3000,
+    "data_file_regression": "data_file/regression_data/training_data_combined.csv",
+    "n_train": 14000,
     "epochs": 150,
     "batch_size": 30,
-    "model_save_path_classification": "models_file/classification_models/model_regression_test.keras",
-    "model_save_path_regression": "models_file/regression_models/model_5.keras",
+    "model_save_path_classification": "models_file/classification_models/model.keras",
+    "model_save_path_regression": "models_file/regression_models/model_5_test.keras",
     "model_type": 1
   },
 
@@ -15,8 +15,8 @@
   },
 
   "ai_run": {
-    "map_file": "PNG_File/map3.png",
-    "model_path_classification": "../ai/models_file/model_path_classification/model_regression_test.keras",
+    "map_file": "PNG_File/map5.png",
+    "model_path_classification": "../ai/models_file/classification_models/model_combined.keras",
     "model_path_regression": "../ai/models_file/regression_models/model_combined.keras",
     "width": "auto",
     "height": "auto",
@@ -45,5 +45,5 @@
   "prediction":
   {
     "prediction": "regression"
-  } 
+  }
 }

@@ -1,5 +1,6 @@
 import pandas as pd
 import tensorflow as tf
+import numpy as np
 from pathlib import Path
 import sys
 
@@ -45,7 +46,11 @@ def load_data(file_path, n_train=3000, batch_size=30):
     if feature_scaling_cfg["method"] == 1: # Normalisieren
         x = x / 298.0
     elif feature_scaling_cfg["method"] == 2: # Standardisieren
-        x = (x - x.mean()) / x.std() 
+        mean = x.mean()
+        std =  x.std()
+        x = (x - mean) / std
+        np.save("data_file/mean.npy", mean)
+        np.save("data_file/std.npy", std)
 
     # Gesamtdataset bauen
     ds = tf.data.Dataset.from_tensor_slices((x, y))
