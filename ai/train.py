@@ -86,5 +86,5 @@ if prediction_cfg["prediction"] == "classification":
 elif prediction_cfg["prediction"] == "regression":
     save_path = train_cfg["model_save_path_regression"]
 
-model.save(save_path)
+model.save(Path.cwd() / "ai" / train_cfg["model_save_path"])
 print(f"Modell gespeichert als {save_path}")
