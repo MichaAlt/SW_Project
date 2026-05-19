@@ -36,32 +36,46 @@ def create_model(input_shape=(5,), num_classes= 5):
     
     return model
  """
-def create_model(input_shape=(6,)):
 
-    model = tf.keras.Sequential([
+import tensorflow as tf
 
-        tf.keras.layers.Input(shape=input_shape),
+def create_model(input_shape=(5,)):
+    inputs = tf.keras.Input(shape=input_shape)
 
-        tf.keras.layers.Dense(256, activation="relu"),
+    x = tf.keras.layers.Dense(256, activation="relu")(inputs)
+    x = tf.keras.layers.Dense(128, activation="relu")(x)
+    x = tf.keras.layers.Dense(64, activation="relu")(x)
 
-        tf.keras.layers.Dense(128, activation="relu"),
+    turn_output = tf.keras.layers.Dense(
+        1,
+        activation="tanh",
+        name="turn"
+    )(x)
 
-        tf.keras.layers.Dense(64, activation="relu"),
+    speed_output = tf.keras.layers.Dense(
+        1,
+        activation="sigmoid",
+        name="speed"
+    )(x)
 
-        tf.keras.layers.Dense(2)
-
-    ])
+    model = tf.keras.Model(
+        inputs=inputs,
+        outputs={
+            "turn": turn_output,
+            "speed": speed_output
+        }
+    )
 
     model.compile(
-
-        optimizer="sgd",
-
-        loss="mse",
-
-        metrics=["mae"]
-
+        optimizer="adam",
+        loss={
+            "turn": "mse",
+            "speed": "mse"
+        },
+        metrics={
+            "turn": ["mae"],
+            "speed": ["mae"]
+        }
     )
 
     return model
-
-

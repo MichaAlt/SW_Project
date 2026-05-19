@@ -14,20 +14,9 @@ config = load_config()
 train_cfg = config["train"]
 
 # Trainingsdaten aus der Konfigurationsdatei laden
-"""
-train_ds, test_ds = load_data(
-    train_cfg["data_file"],
-    train_cfg["n_train"],
-    train_cfg["batch_size"]
-)
-"""
 x_train, y_train, x_test, y_test = load_data(
-
     train_cfg["data_file"],
-
     train_cfg["n_train"],
-
-
 )
 
 # Modell erstellen
@@ -35,38 +24,19 @@ model = create_model()
 
 # Modell trainieren
 print("Modell trainieren...")
-"""
-model.fit(
-    train_ds,
-    epochs=train_cfg["epochs"],
-    #batch_size=train_cfg["batch_size"]
-)
-"""
-model.fit(
-
+history = model.fit(
     x_train,
-
     y_train,
-
     epochs=train_cfg["epochs"],
-
     batch_size=train_cfg["batch_size"]
-
 )
 
 # Modell evaluieren
 print("\nModell evaluieren:")
-"""
-loss, acc = model.evaluate(test_ds)
-print("Test Accuracy:", acc, "Test Loss:", loss)
-"""
-"""
-loss, mae = model.evaluate(test_ds)
-print("Test Loss:", loss, "Test MAE:", mae)
-"""
-loss, mae = model.evaluate(x_test, y_test)
+results = model.evaluate(x_test, y_test, return_dict=True)
 
-print("Test Loss:", loss, "Test MAE:", mae)
+for key, value in results.items():
+    print(f"{key}: {value}")
 
 # Modell speichern
 model.save(train_cfg["model_save_path"])

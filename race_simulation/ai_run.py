@@ -17,6 +17,7 @@ from Config.config_loader import load_config
 config = load_config()
 ai_cfg = config["ai_run"]
 
+
 def get_screen_size(cfg):
     pygame.init()
     info = pygame.display.Info()
@@ -26,21 +27,25 @@ def get_screen_size(cfg):
 
     return cfg["width"], cfg["height"]
 
+
 WIDTH, HEIGHT = get_screen_size(ai_cfg)
 
-def normalize_input(radar_values, angle):
+
+def clamp(value, low, high):
+    return max(low, min(high, value))
+
+
+def normalize_input(radar_values):
     x_input = np.array(
-        radar_values + [angle],
+        radar_values,
         dtype=np.float32
     ).reshape(1, -1)
 
-    # Radarwerte normalisieren
+    # 5个sensor归一化
     x_input[:, 0:5] = x_input[:, 0:5] / 298.0
 
-    # Winkel skalieren
-    x_input[:, 5] = x_input[:, 5] / 360.0
-
     return x_input
+
 
 def main():
     os.environ["SDL_RENDER_DRIVER"] = "opengl"
@@ -59,8 +64,7 @@ def main():
     # KI-Modell laden
     model = tf.keras.models.load_model(ai_cfg["model_path"])
 
-    prev_dx = 0.0
-    prev_dy = 0.0
+    prev_turn_angle = 0.0
 
     running = True
     while running:
@@ -68,55 +72,50 @@ def main():
         screen.blit(display_map, (offset_x, offset_y))
 
         if car.alive and len(car.radar_values) == 5:
-            x_input = normalize_input(
-                car.radar_values,
-                car.angle
-            )
+            x_input = normalize_input(car.radar_values)
 
             pred = model(x_input, training=False)
-            raw_dx = float(pred[0][0])
-            raw_dy = float(pred[0][1])
 
-            # Roh-Ausgabe normieren
-            norm = (raw_dx ** 2 + raw_dy ** 2) ** 0.5 + 1e-8
-            raw_dx = raw_dx / norm
-            raw_dy = raw_dy / norm
+            # 双输出模型:
+            # pred["turn"]  -> [[turn_norm]]
+            # pred["speed"] -> [[speed_norm]]
+            raw_turn_norm = float(pred["turn"][0][0])
+            raw_speed_norm = float(pred["speed"][0][0])
 
-            # Glättung
-            dx = 0.0 * prev_dx + 1.0 * raw_dx
-            dy = 0.0 * prev_dy + 1.0 * raw_dy
+            # turn_norm in [-1, 1]
+            turn_norm = clamp(raw_turn_norm, -1.0, 1.0)
 
-            # Nach der Glättung erneut normieren
-            smooth_norm = (dx ** 2 + dy ** 2) ** 0.5 + 1e-8
-            dx = dx / smooth_norm
-            dy = dy / smooth_norm
+            # speed_norm in [0, 1]
+            speed_norm = clamp(raw_speed_norm, 0.0, 1.0)
 
-            print(
-                f"raw_dx={raw_dx:.3f}, raw_dy={raw_dy:.3f}, "
-                f"dx={dx:.3f}, dy={dy:.3f}"
+            # 还原成角度
+            pred_turn_angle = turn_norm * 180.0
+
+            # 轻微平滑
+            turn_angle = 0.2 * prev_turn_angle + 0.8 * pred_turn_angle
+            prev_turn_angle = turn_angle
+
+            # 速度恢复成真实速度
+            actual_speed = (
+                speed_norm
+                * ai_cfg["forward_speed_max"]
+                * ai_cfg["speed_multiplier"]
             )
-
-            prev_dx = dx
-            prev_dy = dy
-
-            target_angle = (-np.degrees(np.arctan2(dy, dx))) % 360
-            angle_diff = (target_angle - car.angle + 180) % 360 - 180
         else:
-            dx = prev_dx
-            dy = prev_dy
-            target_angle = car.angle
-            angle_diff = 0.0
+            turn_angle = 0.0
+            speed_norm = 0.0
+            actual_speed = 0.0
 
         # Steuerung zuerst
-        car.speed = ai_cfg["forward_speed"]
+        car.speed = actual_speed
         max_turn = ai_cfg["max_turn_per_step"]
 
-        if angle_diff > max_turn:
+        if turn_angle > max_turn:
             car.angle += max_turn
-        elif angle_diff < -max_turn:
+        elif turn_angle < -max_turn:
             car.angle -= max_turn
         else:
-            car.angle += angle_diff
+            car.angle += turn_angle
 
         # Danach erst Update und Zeichnen
         car.update(game_map)
@@ -127,13 +126,17 @@ def main():
         sensor_surface = font_big.render(sensor_text, True, (255, 255, 0))
         screen.blit(sensor_surface, (50, 50))
 
-        dxdy_text = f"dx: {dx:.3f}, dy: {dy:.3f}"
-        dxdy_surface = font_big.render(dxdy_text, True, (0, 255, 255))
-        screen.blit(dxdy_surface, (50, 90))
+        turn_text = f"turn_angle: {turn_angle:.3f}"
+        turn_surface = font_big.render(turn_text, True, (0, 255, 255))
+        screen.blit(turn_surface, (50, 90))
 
-        angle_text = f"Target angle: {target_angle:.2f}, car.angle: {car.angle:.2f}, diff: {angle_diff:.2f}"
+        angle_text = f"car.angle: {car.angle:.2f}, max_turn: {max_turn:.2f}"
         angle_surface = font_big.render(angle_text, True, (0, 255, 255))
         screen.blit(angle_surface, (50, 130))
+
+        speed_text = f"speed_norm: {speed_norm:.3f}, speed/frame: {actual_speed:.3f}"
+        speed_surface = font_big.render(speed_text, True, (0, 255, 255))
+        screen.blit(speed_surface, (50, 170))
 
         pygame.display.flip()
         clock.tick(60)
@@ -148,6 +151,7 @@ def main():
 
     pygame.quit()
     sys.exit()
+
 
 if __name__ == "__main__":
     main()
