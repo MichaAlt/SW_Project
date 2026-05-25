@@ -1,21 +1,52 @@
-from stable_baselines3 import PPO
-from env_car import CarEnv
+import pygame
+from stable_baselines3 import PPO, DDPG, SAC
+from enviroment import enviroment
+import sys
+from pathlib import Path
 
-MAP_PATH = "PNG_File/map1.png"
+ROOT_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(str(ROOT_DIR))
 
-env = CarEnv(MAP_PATH)
+from Config.config_loader import load_config
 
-model = PPO.load("car_rl_model")
+config = load_config()
+run_rl_cfg = config["run_rl"]
 
-obs, _ = env.reset()
+
+# Enviroment initialisieren
+env = enviroment(run_rl_cfg["map_file"], render_mode=True)
+
+# Modell laden
+model = PPO.load(run_rl_cfg["model_load_path"])
+
+# state initialisieren
+state, _ = env.reset()
 
 running = True
-while running:
-    action, _states = model.predict(obs)
 
-    obs, reward, terminated, truncated, _ = env.step(action)
+# Game-Loop
+while running:
+
+    for event in pygame.event.get():
+
+        # Fenster schließen
+        if event.type == pygame.QUIT:
+            running = False
+        
+        # Game-Loop mit Taste esc oder q abbrechen
+        elif event.type == pygame.KEYDOWN:
+                if event.key in [pygame.K_ESCAPE, pygame.K_q]:
+                    running = False
+
+    # action_prediction
+    action, _ = model.predict(state, deterministic=True)
+
+
+    state, _, terminated, truncated, _ = env.step(action)
 
     env.render()
 
+    # terminated = Episode natürlich zuende gegangen
+    # truncated = Limit erreicht
     if terminated or truncated:
-        obs, _ = env.reset()
+        state, _ = env.reset()
