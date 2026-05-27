@@ -35,7 +35,7 @@ class enviroment(gym.Env):
 
         self.car = Car()
 
-        #TODO: Nicht Rendern funktioniert auch ohne if-Abfrage beim training, wieso??
+        #TODO: Entscheiden ob sinnvolle Abfrage, wahrscheinlich nicht
         if self.render_mode:
             pygame.init()
 

@@ -13,18 +13,29 @@ train_rl_cfg = config["train_rl"]
 
 env = make_vec_env( lambda: enviroment(train_rl_cfg["map_file"], render_mode=False), n_envs=train_rl_cfg["n_envs"])
 
-model = PPO(
-    "MlpPolicy",
-    env,
-    verbose=1
-    #learning_rate=3e-4,
-    #n_steps=2048,
-    #batch_size=64,
-    #gamma=0.99
-)
+match(train_rl_cfg["rl_algorithm"]):
+
+    case "PPO":
+        model = PPO(
+            "MlpPolicy",
+            env,
+            verbose=1
+        )
+    case "DDPG":
+        model = DDPG(
+            "MlpPolicy",
+            env,
+            verbose=1
+        )
+    case "SAC":
+        model = SAC(
+            "MlpPolicy",
+            env,
+            verbose=1
+        )
 
 # Altes Modell zum weiter trainieren laden
-if train_rl_cfg["continue_model_training"] == 1:
+if train_rl_cfg["continue_model_training"] == "true":
     model = PPO.load(train_rl_cfg["model_load_path"], env = env) 
 
 model.learn(total_timesteps=train_rl_cfg["total_timesteps"])

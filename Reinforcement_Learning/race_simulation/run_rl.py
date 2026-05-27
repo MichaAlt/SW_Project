@@ -17,7 +17,16 @@ run_rl_cfg = config["run_rl"]
 env = enviroment(run_rl_cfg["map_file"], render_mode=True)
 
 # Modell laden
-model = PPO.load(run_rl_cfg["model_load_path"])
+match(run_rl_cfg["rl_algorithm"]):
+    case "PPO":
+          model = PPO.load(run_rl_cfg["model_load_path"])
+
+    case "DDPG":
+          model = DDPG.load(run_rl_cfg["model_load_path"])
+
+    case "SAC":
+          model = SAC.load(run_rl_cfg["model_load_path"])
+
 
 # state initialisieren
 state, _ = env.reset()
