@@ -1,16 +1,24 @@
 {   
     "train_rl": {
         "map_file" : "PNG_File/map3.png",
-        "model_load_path" : "models_file/model_combined_3",
-        "model_save_path" : "models_file/model__combined_3",
-        "continue_model_training": "1",
-        "total_timesteps" : 100000,
-        "n_envs":4
+        "model_load_path_PPO" : "models_file/PPO_models_file/model_2",
+        "model_save_path_PPO" : "models_file/PPO_models_file/mode_2",
+        "model_load_path_DDPG" : "models_file/DDPG_models_file/model_1",
+        "model_save_path_DDPG" : "models_file/DDPG_models_file/model_1",
+        "model_load_path_SAC" : "models_file/SAC_models_file/model_combined_fin",
+        "model_save_path_SAC" : "models_file/SAC_models_file/model_combined_fin_2",
+        "rl_algorithm" : "DDPG",
+        "continue_model_training": "false",
+        "total_timesteps" : 50000,
+        "n_envs":4 
     },
 
     "run_rl": {
-        "map_file" : "PNG_File/map5.png",
-        "model_load_path" : "models_file/model__combined_fin"
+        "map_file" : "PNG_File/map3.png",
+        "model_load_path_PPO" : "models_file/PPO_models_file/model_combined_fin",
+        "model_load_path_DDPG" : "models_file/DDPG_models_file/model_1",
+        "model_load_path_SAC" : "models_file/SAC_models_file/model_combined_fin",
+        "rl_algorithm" : "DDPG"
     },
 
     "enviroment":{

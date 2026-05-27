@@ -36,9 +36,21 @@ match(train_rl_cfg["rl_algorithm"]):
 
 # Altes Modell zum weiter trainieren laden
 if train_rl_cfg["continue_model_training"] == "true":
-    model = PPO.load(train_rl_cfg["model_load_path"], env = env) 
+    match(train_rl_cfg["rl_algorithm"]):
+        case "PPO":
+            model = PPO.load(train_rl_cfg["model_load_path_PPO"], env = env)
+        case "DDPG":
+            model = DDPG.load(train_rl_cfg["model_load_path_DDPG"], env = env)
+        case "SAC":
+            model = SAC.load(train_rl_cfg["model_load_path_SAC"], env = env)
 
 model.learn(total_timesteps=train_rl_cfg["total_timesteps"])
 
-model.save(train_rl_cfg["model_save_path"])
+match(train_rl_cfg["rl_algorithm"]):
+    case "PPO":
+        model.save(train_rl_cfg["model_save_path_PPO"])
+    case "DDPG":
+        model.save(train_rl_cfg["model_save_path_DDPG"])
+    case "SAC":
+        model.save(train_rl_cfg["model_save_path_SAC"])
 print("Training fertig!")
