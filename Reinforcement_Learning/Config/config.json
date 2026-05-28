@@ -14,11 +14,11 @@
     },
 
     "run_rl": {
-        "map_file" : "PNG_File/map3.png",
+        "map_file" : "PNG_File/map5.png",
         "model_load_path_PPO" : "models_file/PPO_models_file/model_combined_fin",
         "model_load_path_DDPG" : "models_file/DDPG_models_file/model_1",
         "model_load_path_SAC" : "models_file/SAC_models_file/model_combined_fin",
-        "rl_algorithm" : "DDPG"
+        "rl_algorithm" : "SAC"
     },
 
     "enviroment":{

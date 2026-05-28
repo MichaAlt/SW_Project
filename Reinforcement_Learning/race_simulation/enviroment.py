@@ -47,7 +47,7 @@ class enviroment(gym.Env):
         # State definieren
         self.observation_space = spaces.Box(
             low=np.array([0, 0, 0, 0, 0, 0]),
-            high=np.array([20, 300, 300, 300, 300, 300]),
+            high=np.array([enviroment_cfg["speed_scaling"], 300, 300, 300, 300, 300]),
             shape=(6,),
             dtype=np.float32
         )
