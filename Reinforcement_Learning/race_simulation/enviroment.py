@@ -25,7 +25,10 @@ class enviroment(gym.Env):
         self.render_mode = render_mode
         self.screen = None
 
+        # Momentan unbenutzt
         self.max_steps = 50000
+
+        # Momentan unbenutzt
         self.step_count = 0
 
 
@@ -35,7 +38,7 @@ class enviroment(gym.Env):
 
         self.car = Car()
 
-        #TODO: Entscheiden ob sinnvolle Abfrage, wahrscheinlich nicht
+        #TODO: Entscheiden ob sinnvolle Abfrage, wahrscheinlich nicht. Korrektur in train.py notwendig
         if self.render_mode:
             pygame.init()
 
@@ -60,7 +63,7 @@ class enviroment(gym.Env):
         )
 
     # State abfragen
-    def _get_state(self):
+    def get_state(self):
         return np.array([self.car.speed] + self.car.radar_values, dtype=np.float32)
 
 
@@ -68,11 +71,13 @@ class enviroment(gym.Env):
         super().reset(seed=seed)
         self.car.reset()
         self.car.update(self.game_map)
-        return self._get_state(), {}
+        return self.get_state(), {}
 
     def step(self, action):
         
+        # Step counter
         self.step_count += 1
+
 
         truncated = False
         terminated = False
@@ -86,7 +91,7 @@ class enviroment(gym.Env):
 
         self.car.update(self.game_map)
 
-        obs = self._get_state()
+        obs = self.get_state()
 
         # Belohnungs-Wert
         reward = 0.0
