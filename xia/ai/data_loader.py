@@ -14,7 +14,7 @@ def load_data(file_path, n_train=3000):
         "pos_y",
         "angle",
         "turn_angle",
-        "speed_norm"
+        "speed_norm" 
     ]
 
     data = data.sample(frac=1, random_state=42).reset_index(drop=True)

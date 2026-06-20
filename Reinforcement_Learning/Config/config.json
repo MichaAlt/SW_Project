@@ -1,23 +1,23 @@
 {
     "train_rl": {
-        "map_file": "PNG_File/map3.png",
+        "map_file": "PNG_File/map5.png",
         "model_load_path_PPO": "models_file/PPO_models_file/model_2",
-        "model_save_path_PPO": "models_file/PPO_models_file/mode_2",
+        "model_save_path_PPO": "models_file/PPO_models_file/model_1.zip",
         "model_load_path_DDPG": "models_file/DDPG_models_file/model_1",
         "model_save_path_DDPG": "models_file/DDPG_models_file/model_1",
         "model_load_path_SAC": "models_file/SAC_models_file/model_combined_fin",
         "model_save_path_SAC": "models_file/SAC_models_file/model_combined_fin_2",
-        "rl_algorithm": "SAC",
+        "rl_algorithm": "PPO",
         "continue_model_training": "false",
         "total_timesteps": 50000,
         "n_envs": 4
     },
     "run_rl": {
         "map_file": "PNG_File/map5.png",
-        "model_load_path_PPO": "models_file/PPO_models_file/model_combined_fin",
+        "model_load_path_PPO": "models_file/PPO_models_file/model_combined_fin.zip",
         "model_load_path_DDPG": "models_file/DDPG_models_file/model_1",
         "model_load_path_SAC": "models_file/SAC_models_file/model_combined_fin",
-        "rl_algorithm": "SAC"
+        "rl_algorithm": "PPO"
     },
     "enviroment": {
         "steer_scaling": 20,
