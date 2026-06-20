@@ -8,13 +8,13 @@ import sys
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-CONFIG_PATH = BASE_DIR / "Reinforcement_Learning" / "Config" / "config.json"
+CONFIG_PATH = BASE_DIR / "Config" / "config.json"
 
-PPO_MODELS_DIR = BASE_DIR / "Reinforcement_Learning" / "race_simulation"/ "models_file"/ "PPO_models_file"
-DDPG_MODELS_DIR = BASE_DIR / "Reinforcement_Learning" / "race_simulation"/ "models_file"/ "DDPG_models_file"
-SAC_MODELS_DIR = BASE_DIR / "Reinforcement_Learning" / "race_simulation"/ "models_file"/ "SAC_models_file"
+PPO_MODELS_DIR = BASE_DIR / "Reinforcement_Learning" / "models_file"/ "PPO_models_file"
+DDPG_MODELS_DIR = BASE_DIR / "Reinforcement_Learning" / "models_file"/ "DDPG_models_file"
+SAC_MODELS_DIR = BASE_DIR / "Reinforcement_Learning" / "models_file"/ "SAC_models_file"
 
-MAPS_DIR =BASE_DIR / "Reinforcement_Learning" / "race_simulation"/ "PNG_File"
+MAPS_DIR =BASE_DIR / "PNG_File"
 
 
 def main():
@@ -380,31 +380,23 @@ def create_model(
 def train_model():
 
     train_path = (
-        BASE_DIR
-        / "race_simulation"
-        / "train_rl.py"
+        BASE_DIR / "Reinforcement_Learning" / "train_rl.py"
     )
 
     subprocess.run(
         [sys.executable, str(train_path)],
-        cwd=str(BASE_DIR / "race_simulation")
+        cwd=str(BASE_DIR/"Reinforcement_Learning")
     )
 
 
 def run_model():
 
     run_path = (
-        BASE_DIR  / "Reinforcement_Learning"/ "race_simulation" / "run_rl.py"
-    )
-
+        BASE_DIR  / "Reinforcement_Learning"/ "run_rl.py"
+    ) 
     subprocess.run(
         [sys.executable, str(run_path)],
-        cwd=str(BASE_DIR / "Reinforcement_Learning" / "race_simulation")
-    )
-
-    subprocess.run(
-        [sys.executable, str(run_path)],
-        cwd=str(BASE_DIR)
+        cwd=str(BASE_DIR /"Reinforcement_Learning")
     )
 
 
@@ -582,7 +574,7 @@ def update_config_map(
     )
 
     map_path = str(
-        Path("PNG_File") / map_name
+        Path("../PNG_File") / map_name
     )
 
     config["train_rl"]["map_file"] = map_path
