@@ -1,19 +1,19 @@
 {
   "train": {
     "data_file": "data_file/auto_collect_speed_auto6.csv",
-    "n_train": 20000,
+    "n_train": 6000,
     "epochs": 150,
     "batch_size": 20,
     "model_save_path": "models_file/model_speed_world_neu6.keras"
   },
 
   "ai_run": {
-    "map_file": "map2.png",
+    "map_file": "map5.png",
     "model_path": "../ai/models_file/model_speed_world_neu6.keras",
     "width": "auto",
     "height": "auto",
     "forward_speed_max": 5.0,
-    "speed_multiplier": 2.0,
+    "speed_multiplier": 3.0,
     "max_turn_per_step": 20
   },
 
@@ -55,17 +55,19 @@
   "map4.png",
   "map5.png"
   ],
-  "map_file_run":"map2.png",
+  "map_file_run":"map3.png",
   "width": "auto",
   "height": "auto",
-
+  "leave_start_distance": 200,
+  "finish_distance": 80,
+  "min_lap_steps": 300,
   "forward_speed_max": 5.0,
   "speed_multiplier": 1.0,
-  "max_turn_per_step": 5.0,
+  "max_turn_per_step": 10,
 
   "sensor_max_distance": 298.0,
 
-  "max_steps": 2000,
+  "max_steps": 20000,
 
   "reward_alive": 1.0,
   "reward_speed_factor": 0.5,
@@ -74,8 +76,8 @@
   "low_speed_threshold": 0.05,
   "penalty_crash": -100.0,
 
-  "model_save_path": "ai/models_file/ppo_car_rl2",
-  "total_timesteps": 100000,
+  "model_save_path": "ai/models_file/ppo_car_rl4",
+  "total_timesteps": 500000,
 
   "learning_rate": 0.0003,
   "n_steps": 1024,

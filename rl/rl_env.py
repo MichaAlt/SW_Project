@@ -8,7 +8,6 @@ import gymnasium as gym
 from gymnasium import spaces
 import random
 
-
 # 项目根目录：SW_Project
 ROOT_DIR = Path(__file__).resolve().parent.parent
 RACE_DIR = ROOT_DIR / "race_simulation"
@@ -21,10 +20,8 @@ from Config.config_loader import load_config
 from car import Car
 from map_loader import load_map
 
-
 def clamp(value, low, high):
     return max(low, min(high, value))
-
 
 def get_screen_size(cfg):
     pygame.init()
@@ -34,7 +31,6 @@ def get_screen_size(cfg):
         return info.current_w, info.current_h
 
     return cfg["width"], cfg["height"]
-
 
 class CarEnv(gym.Env):
     """
@@ -48,7 +44,7 @@ class CarEnv(gym.Env):
 
     metadata = {"render_modes": ["human", None]}
 
-    def __init__(self, render_mode=None,random_map=True,fixed_map=None):
+    def __init__(self, render_mode=None, random_map=True, fixed_map=None, sequential_map=False):
         super().__init__()
 
         self.render_mode = render_mode
@@ -57,20 +53,13 @@ class CarEnv(gym.Env):
         self.rl_cfg = self.config["rl"]
         self.random_map = random_map
         self.fixed_map = fixed_map
+
+        # 新增：是否按顺序切换地图
+        self.sequential_map = sequential_map
+        self.map_index = 0
+
         self.width, self.height = get_screen_size(self.rl_cfg)
 
-        # 地图路径：如果 config 里只是 map2.png，就自动去 race_simulation 里找
-        """
-        map_path = self.rl_cfg["map_file"]
-        if not os.path.isabs(map_path):
-            map_path = str(RACE_DIR / map_path)
-
-        self.screen, self.game_map, self.display_map, self.scale, self.offset_x, self.offset_y = load_map(
-            map_path,
-            self.width,
-            self.height
-        )
-        """
         self.map_files = self.rl_cfg["map_files"]
         self.current_map = None
 
@@ -116,9 +105,21 @@ class CarEnv(gym.Env):
         self.last_speed_norm = 0.0
         self.last_turn_angle = 0.0
         self.last_actual_speed = 0.0
+
+        # 新增：跑圈判断相关变量
+        self.start_x = 0.0
+        self.start_y = 0.0
+        self.has_left_start_area = False
+        self.lap_finished = False
+
     def load_map_for_episode(self):
-        if self.random_map:
+        if self.sequential_map:
+            map_file = self.map_files[self.map_index]
+            self.map_index = (self.map_index + 1) % len(self.map_files)
+
+        elif self.random_map:
             map_file = random.choice(self.map_files)
+
         else:
             map_file = self.fixed_map or self.rl_cfg["map_file_run"]
 
@@ -139,6 +140,14 @@ class CarEnv(gym.Env):
         self.load_map_for_episode()
         self.car = Car()
         self.car.reset()
+        self.last_x = self.car.center[0]
+        self.last_y = self.car.center[1]
+
+        # 新增：记录起点，用来判断是否跑完一圈
+        self.start_x = self.car.center[0]
+        self.start_y = self.car.center[1]
+        self.has_left_start_area = False
+        self.lap_finished = False
 
         self.score = 0.0
         self.step_count = 0
@@ -152,9 +161,11 @@ class CarEnv(gym.Env):
         self.car.update(self.game_map)
 
         observation = self.get_observation()
-        info = {"score": self.score,
-                "current_map": self.current_map
-                }
+        info = {
+            "score": self.score,
+            "current_map": self.current_map,
+            "lap_finished": self.lap_finished
+        }
 
         return observation, info
 
@@ -168,13 +179,21 @@ class CarEnv(gym.Env):
         observation = self.get_observation()
 
         # 3. 判断是否撞墙
-        terminated = self.check_collision()
+        crashed = self.check_collision()
 
-        # 4. 判断是否超过最大步数
-        truncated = self.step_count >= self.max_steps
+        # 4. 判断是否顺利跑完一圈
+        lap_finished = self.check_lap_finished()
 
-        # 5. 计算 reward
-        reward = self.calculate_reward(observation, terminated)
+        # 5. 撞墙或者跑完一圈，结束当前 episode
+        terminated = crashed or lap_finished
+
+        # 6. 不使用 max_steps 截断
+        truncated = False
+
+        # 7. 计算 reward
+        # 注意：这里只传 crashed，不传 terminated
+        # 否则跑完一圈也会被当成撞墙扣分
+        reward = self.calculate_reward(observation, crashed)
 
         self.score += reward
 
@@ -186,7 +205,9 @@ class CarEnv(gym.Env):
             "speed_norm": self.last_speed_norm,
             "turn_angle": self.last_turn_angle,
             "actual_speed": self.last_actual_speed,
-            "alive": self.car.alive
+            "alive": self.car.alive,
+            "crashed": crashed,
+            "lap_finished": lap_finished
         }
 
         if self.render_mode == "human":
@@ -251,6 +272,41 @@ class CarEnv(gym.Env):
         self.last_turn_angle = turn_angle
         self.last_actual_speed = actual_speed
 
+    def check_lap_finished(self):
+        """
+        判断是否顺利跑完一圈：
+        1. 一开始在起点附近，不算完成
+        2. 必须先离开起点一定距离
+        3. 离开后再次回到起点附近，才算完成一圈
+        """
+
+        if self.car is None:
+            return False
+
+        current_x = self.car.center[0]
+        current_y = self.car.center[1]
+
+        dx = current_x - self.start_x
+        dy = current_y - self.start_y
+        distance_to_start = (dx ** 2 + dy ** 2) ** 0.5
+
+        leave_start_distance = self.rl_cfg.get("leave_start_distance", 200)
+        finish_distance = self.rl_cfg.get("finish_distance", 80)
+        min_lap_steps = self.rl_cfg.get("min_lap_steps", 300)
+
+        if distance_to_start > leave_start_distance:
+            self.has_left_start_area = True
+
+        if (
+            self.has_left_start_area
+            and distance_to_start < finish_distance
+            and self.step_count > min_lap_steps
+        ):
+            self.lap_finished = True
+            return True
+
+        return False
+
     def calculate_reward(self, observation, terminated):
         """
     改进版 reward:
@@ -281,18 +337,19 @@ class CarEnv(gym.Env):
 
     # 2. 前方越空，速度越快越奖励
         reward += 2.0 * speed * front
+    # 3. 前方很安全，而且不乱转，额外奖励稳定前进
+
+        if front > 0.65 and speed > 0.4 and turn < 0.4:
+
+            reward += 0.5
 
     # 3. 前方很近还开很快，扣分
         if front < 0.25 and speed > 0.5:
-            reward -= 3.0
+            reward -= 4.0
 
     # 4. 前方很远但速度太低，扣分
         if front > 0.6 and speed < 0.3:
             reward -= 1.0
-
-    # 5. 前方很近时鼓励减速
-        if front < 0.25 and speed < 0.35:
-            reward += 1.0
 
     # 6. 鼓励车不要太贴墙
         min_side_distance = min(right, left, right_front, left_front)
@@ -300,15 +357,31 @@ class CarEnv(gym.Env):
 
     # 7. 如果左右距离差太大，说明太靠边，稍微扣分
         side_balance = abs(left - right)
-        reward -= 0.3 * side_balance
+        reward -= 0.4 * side_balance
 
     # 8. 转向太大且速度很快，容易撞，扣一点
-        if turn > 0.7 and speed > 0.6:
+        if abs(turn) > 0.7 and speed > 0.3:
             reward -= 1.0
 
     # 9. 防止完全不动
         if speed < self.rl_cfg["low_speed_threshold"]:
             reward -= self.rl_cfg["penalty_low_speed"]
+    # 10
+        current_x = self.car.center[0]
+        current_y = self.car.center[1]
+
+        dx = current_x - self.last_x
+        dy = current_y - self.last_y
+        distance_moved = (dx ** 2 + dy ** 2) ** 0.5
+
+        if distance_moved < 0.5:
+            reward -= 0.5
+
+        self.last_x = current_x
+        self.last_y = current_y
+    # 12. 惩罚左右来回抽动
+
+        reward -= 0.3 * turn
 
         return float(reward)
 
@@ -363,11 +436,16 @@ class CarEnv(gym.Env):
             sensor_surface = font_big.render(sensor_text, True, (255, 255, 0))
             self.screen.blit(sensor_surface, (50, 290))
 
+            lap_text = f"lap_finished: {self.lap_finished}"
+            lap_surface = font_big.render(lap_text, True, (255, 255, 0))
+            self.screen.blit(lap_surface, (50, 330))
+
         pygame.display.flip()
         self.clock.tick(60)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.close()
+
     def close(self):
         pygame.quit()

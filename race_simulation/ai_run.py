@@ -41,7 +41,7 @@ def normalize_input(radar_values):
         dtype=np.float32
     ).reshape(1, -1)
 
-    # 5个sensor归一化
+    # 5 Sensorwerte normalisieren
     x_input[:, 0:5] = x_input[:, 0:5] / 298.0
 
     return x_input
@@ -76,26 +76,26 @@ def main():
 
             pred = model(x_input, training=False)
 
-            # 双输出模型:
+            # Modell mit zwei Ausgängen:
             # pred["turn"]  -> [[turn_norm]]
             # pred["speed"] -> [[speed_norm]]
             raw_turn_norm = float(pred["turn"][0][0])
             raw_speed_norm = float(pred["speed"][0][0])
 
-            # turn_norm in [-1, 1]
+            # turn_norm im Bereich [-1, 1]
             turn_norm = clamp(raw_turn_norm, -1.0, 1.0)
 
-            # speed_norm in [0, 1]
+            # speed_norm im Bereich [0, 1]
             speed_norm = clamp(raw_speed_norm, 0.0, 1.0)
 
-            # 还原成角度
+            # In einen Winkel zurückrechnen
             pred_turn_angle = turn_norm * 180.0
 
-            # 轻微平滑
+            # Leichte Glättung
             turn_angle = 0.2 * prev_turn_angle + 0.8 * pred_turn_angle
             prev_turn_angle = turn_angle
 
-            # 速度恢复成真实速度
+            # Geschwindigkeit in reale Geschwindigkeit zurückrechnen
             actual_speed = (
                 speed_norm
                 * ai_cfg["forward_speed_max"]

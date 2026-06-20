@@ -40,22 +40,23 @@ def centerline_controller(radar_values, cfg):
     """
     r_right, r_right_front, r_front, r_left_front, r_left = radar_values
 
-    # 1) 中线保持：左右距离尽量相等
+    # 1) Mittellinienhaltung: linker und rechter Abstand sollen möglichst gleich sein
     side_error = r_left - r_right
 
-    # 2) 提前看弯：左右前方差
+    # 2) Vorausschau in die Kurve: Unterschied zwischen links vorne und rechts vorne
     front_error = r_left_front - r_right_front
 
-    # 3) 综合转向
+    # 3) Kombinierte Lenkung
     steering = cfg["side_error_gain"] * side_error + cfg["front_error_gain"] * front_error
 
-    # 当前方太近时，更强烈转向
+    # Wenn die Wand vorne zu nah ist, wird stärker gelenkt
     if r_front < cfg["front_close_threshold"]:
         steering += cfg["front_close_extra_gain"] * front_error
 
     steering = clamp(steering, -1.0, 1.0)
 
-    # 4) 自动采集时实际驾驶速度（只是为了把车开稳）
+    # 4) Tatsächliche Fahrgeschwindigkeit bei der automatischen Datenerfassung
+    #    Diese Geschwindigkeit dient nur dazu, das Auto stabil fahren zu lassen
     if r_front < cfg["speed_front_very_close"]:
         speed = cfg["speed_very_slow"]
     elif r_front < cfg["speed_front_close"]:
@@ -82,7 +83,7 @@ def build_training_rows_from_distance(
         start = states[i]
         target_index = None
 
-        # 找到前方直线距离达到 lookahead_distance 的点
+        # Einen zukünftigen Punkt suchen, dessen geradliniger Abstand lookahead_distance erreicht
         for j in range(i + 1, len(states)):
             dx_step = states[j]["x"] - start["x"]
             dy_step = states[j]["y"] - start["y"]
@@ -97,7 +98,7 @@ def build_training_rows_from_distance(
 
         target = states[target_index]
 
-        # 先算未来方向 dx, dy
+        # Zuerst die zukünftige Richtung dx, dy berechnen
         dx = target["x"] - start["x"]
         dy = target["y"] - start["y"]
 
@@ -105,25 +106,25 @@ def build_training_rows_from_distance(
         dx = dx / norm
         dy = dy / norm
 
-        # 再把 dx, dy 转成目标角
+        # Danach dx und dy in den Zielwinkel umrechnen
         target_angle = (-pygame.math.Vector2(dx, dy).as_polar()[1]) % 360
 
-        # 当前还需要转多少角度（范围 -180 ~ 180）
+        # Benötigte Winkeländerung berechnen, Bereich: -180 bis 180 Grad
         turn_angle = (target_angle - start["angle"] + 180) % 360 - 180
 
-        # 速度：用精确时间差 -> 每秒速度 -> 等效每帧速度
+        # Geschwindigkeit: genaue Zeitdifferenz -> Geschwindigkeit pro Sekunde -> äquivalente Geschwindigkeit pro Frame
         dt = target["time"] - start["time"]
         if dt <= 1e-8:
             continue
 
-        speed_per_second = lookahead_distance / dt
+        speed_per_second = dist / dt
         speed_per_frame = speed_per_second / reference_fps
 
         speed_norm = speed_per_frame / base_speed_max
         speed_norm = clamp(speed_norm, 0.0, 1.0)
 
-        # 10列:
-        # 5 sensor + x + y + angle + turn_angle + speed_norm
+        # 10 Spalten:
+        # 5 Sensorwerte + x + y + angle + turn_angle + speed_norm
         row = (
             start["radar"]
             + [start["x"], start["y"], start["angle"], turn_angle, speed_norm]
@@ -188,7 +189,7 @@ def main():
         screen.fill((0, 0, 0))
         screen.blit(display_map, (offset_x, offset_y))
 
-        # 自动控制
+        # Automatische Steuerung
         if car.alive and len(car.radar_values) == 5:
             steering, speed = centerline_controller(car.radar_values, auto_cfg)
 
@@ -201,7 +202,7 @@ def main():
         car.update(game_map)
         car.draw(screen, font_big, scale, offset_x, offset_y)
 
-        # 显示
+        # Anzeige
         sensor_text = "Sensorwerte: " + ", ".join(str(v) for v in car.radar_values)
         sensor_surface = font_big.render(sensor_text, True, (255, 255, 0))
         screen.blit(sensor_surface, (50, 50))
@@ -213,7 +214,7 @@ def main():
         pygame.display.flip()
         clock.tick(60)
 
-        # 记录原始轨迹
+        # Ursprüngliche Trajektorie aufzeichnen
         if car.alive and len(car.radar_values) == 5:
             current_time = pygame.time.get_ticks() / 1000.0
 
@@ -237,7 +238,7 @@ def main():
                 ):
                     current_states.append(current_state)
 
-        # 自动按圈保存
+        # Automatisches Speichern nach einer Runde
         distance_to_start = (
             (car.position[0] - start_x) ** 2 + (car.position[1] - start_y) ** 2
         ) ** 0.5
@@ -255,13 +256,13 @@ def main():
         if distance_to_start > auto_cfg["lap_reset_radius"]:
             lap_saved = False
 
-        # 撞墙重来
+        # Bei Kollision neu starten beziehungsweise aktuelle Daten verwerfen
         if not car.alive:
             current_states.clear()
             frames_since_start = 0
             lap_saved = False
 
-        # 事件
+        # Ereignisse
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
