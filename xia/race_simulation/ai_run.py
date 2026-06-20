@@ -5,14 +5,14 @@ import tensorflow as tf
 import numpy as np
 from pathlib import Path
 
-from car import Car
-from map_loader import load_map
+from SW_Project.xia.race_simulation.car import Car
+from SW_Project.xia.race_simulation.map_loader import load_map
 
 # Projektwurzel SW_Project
 ROOT_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(ROOT_DIR))
 
-from Config.config_loader import load_config
+from SW_Project.xia.Config.config_loader import load_config
 
 config = load_config()
 ai_cfg = config["ai_run"]

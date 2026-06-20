@@ -1,14 +1,14 @@
 from pathlib import Path
 import sys
 
-from data_loader import load_data
-from model import create_model
+from SW_Project.xia.ai.data_loader import load_data
+from SW_Project.xia.ai.model import create_model
 
 # Projektwurzel SW_Project
 ROOT_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(ROOT_DIR))
 
-from Config.config_loader import load_config
+from SW_Project.xia.Config.config_loader import load_config
 
 config = load_config()
 train_cfg = config["train"]

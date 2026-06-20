@@ -2,13 +2,13 @@ import sys
 from pathlib import Path
 
 from stable_baselines3 import PPO
-from rl_env import CarEnv
+from SW_Project.xia.rl.rl_env import CarEnv
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(ROOT_DIR))
 
-from Config.config_loader import load_config
+from SW_Project.xia.Config.config_loader import load_config
 
 
 config = load_config()

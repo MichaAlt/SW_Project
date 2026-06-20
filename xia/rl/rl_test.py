@@ -1,5 +1,5 @@
 from stable_baselines3.common.env_checker import check_env
-from rl_env import CarEnv
+from SW_Project.xia.rl.rl_env import CarEnv
 
 
 env = CarEnv()

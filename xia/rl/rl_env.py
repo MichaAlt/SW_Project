@@ -16,7 +16,7 @@ RACE_DIR = ROOT_DIR / "race_simulation"
 sys.path.append(str(ROOT_DIR))
 sys.path.append(str(RACE_DIR))
 
-from Config.config_loader import load_config
+from SW_Project.xia.Config.config_loader import load_config
 from car import Car
 from map_loader import load_map
 
