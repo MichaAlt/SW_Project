@@ -64,23 +64,9 @@ def main():
 
         frames[frame_name].pack(fill="both", expand=True)
 
-    ttk.Button(
-        menu_frame,
-        text="Classification",
-        command=lambda: show_frame("classification")
-    ).pack(side="left", padx=5, pady=5)
-
-    ttk.Button(
-        menu_frame,
-        text="Regression",
-        command=lambda: show_frame("regression")
-    ).pack(side="left", padx=5, pady=5)
-
-    ttk.Button(
-        menu_frame,
-        text="Reinforcement_Learning",
-        command=lambda: show_frame("reinforcement_learning")
-    ).pack(side="left", padx=5, pady=5)
+    ttk.Button(menu_frame,text="Classification",command=lambda: show_frame("classification")).pack(side="left", padx=5, pady=5)
+    ttk.Button(menu_frame,text="Regression",command=lambda: show_frame("regression")).pack(side="left", padx=5, pady=5)
+    ttk.Button(menu_frame,text="Reinforcement_Learning",command=lambda: show_frame("reinforcement_learning")).pack(side="left", padx=5, pady=5)
 
     show_frame("classification")
     root.mainloop()
@@ -89,13 +75,7 @@ def main():
 def create_model_frame(parent, title, model_type, data_folder, model_folder):
     frame = tk.Frame(parent, bg="gray")
 
-    tk.Label(
-        frame,
-        text=f"{title} Model",
-        bg="gray",
-        font=("Arial", 20)
-    ).pack(pady=15)
-
+    tk.Label(frame,text=f"{title} Model",bg="gray",font=("Arial", 20)).pack(pady=15)
     tk.Label(frame, text="Select training data", bg="gray").pack()
 
     data_box = ttk.Combobox(frame, state="readonly")
@@ -151,42 +131,17 @@ def create_model_frame(parent, title, model_type, data_folder, model_folder):
             model_box,
             model_folder
         )
-    ).pack(
-        padx=80,
-        pady=6,
-        ipady=8,
-        fill="x"
-    )
+    ).pack(padx=80,pady=6,ipady=8,fill="x")
 
-    ttk.Button(
-        frame,
-        text=f"Train {model_type} model",
-        command=lambda: train_model(model_type, model_box)
-    ).pack(
-        padx=80,
-        pady=6,
-        ipady=8,
-        fill="x"
-    )
+    ttk.Button(frame,text=f"Train {model_type} model",command=lambda: train_model(model_type, model_box)).pack(padx=80,pady=6,ipady=8,fill="x"
+)
 
-    ttk.Button(
-        frame,
-        text=f"Run {model_type} model",
-        command=lambda: run_model(model_type, model_box, map_box)
-    ).pack(
-        padx=80,
-        pady=6,
-        ipady=8,
-        fill="x"
-    )
+    ttk.Button(frame,text=f"Run {model_type} model",command=lambda: run_model(model_type, model_box, map_box)).pack(padx=80,pady=6,ipady=8,fill="x")
     tk.Label(frame, text="Select optimizer", bg="gray").pack()
 
     optimizer_box = ttk.Combobox(frame, state="readonly")
 
-    optimizer_box["values"] = [
-        "adam",
-        "sgd"
-    ]
+    optimizer_box["values"] = ["adam","sgd"]
 
     optimizer_box.current(0)
 
@@ -195,11 +150,7 @@ def create_model_frame(parent, title, model_type, data_folder, model_folder):
     optimizer_box.config_key = "optimizer"
     optimizer_box.bind("<<ComboboxSelected>>", config_changed)
 
-    optimizer_box.pack(
-        padx=10,
-        pady=5,
-        fill="x"
-    )
+    optimizer_box.pack(padx=10,pady=5,fill="x")
     return frame
 
 

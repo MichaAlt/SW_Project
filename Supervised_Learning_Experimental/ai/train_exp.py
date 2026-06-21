@@ -1,17 +1,17 @@
 from pathlib import Path
 import sys
 
-from SW_Project.xia.ai.data_loader import load_data
-from SW_Project.xia.ai.model import create_model
+from data_loader_exp import load_data
+from model_exp import create_model
 
 # Projektwurzel SW_Project
 ROOT_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(ROOT_DIR))
 
-from SW_Project.xia.Config.config_loader import load_config
+from Config.config_loader import load_config
 
 config = load_config()
-train_cfg = config["train"]
+train_cfg = config["train_regression_exp"]
 
 # Trainingsdaten aus der Konfigurationsdatei laden
 x_train, y_train, x_test, y_test = load_data(
