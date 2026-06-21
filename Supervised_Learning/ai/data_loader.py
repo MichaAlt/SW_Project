@@ -7,7 +7,7 @@ import sys
 
 
 # Projektwurzel SW_Project
-ROOT_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(ROOT_DIR))
 
 from Config.config_loader import load_config
@@ -20,7 +20,7 @@ prediction_cfg = config["prediction"]
 def load_data(file_path, n_train=3000, batch_size=30):
 
     # Trainingsdaten auslesen
-    data = pd.read_csv(ROOT_DIR / "ai" / file_path)
+    data = pd.read_csv(ROOT_DIR /"Supervised_Learning"/ "ai" / file_path)
 
     if prediction_cfg["prediction"] == "classification":
         # Spaltennamen festlegen

@@ -5,12 +5,11 @@ import pygame
 import sys
 from pathlib import Path
 
-from car import Car
-from map_loader import load_map
-
 ROOT_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(ROOT_DIR))
 
+from car import Car
+from map_loader import load_map
 from Config.config_loader import load_config
 
 config = load_config()
@@ -36,7 +35,8 @@ class enviroment(gym.Env):
             map_path, screen_w, screen_h
         )
 
-        self.car = Car()
+        car_png_path = '../PNG_File/car.png'
+        self.car = Car(car_png_path)
 
         #TODO: Entscheiden ob sinnvolle Abfrage, wahrscheinlich nicht. Korrektur in train.py notwendig
         if self.render_mode:

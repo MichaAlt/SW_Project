@@ -1,5 +1,6 @@
 import pygame
 import math
+import os
 
 CAR_SIZE_X = 60
 CAR_SIZE_Y = 60
@@ -9,8 +10,12 @@ START_ANGLE = 0
 
 
 class Car:
-    def __init__(self):
-        self.sprite = pygame.image.load('PNG_File/car.png').convert_alpha()
+    def __init__(self, car_png_path):
+
+        #self.sprite = pygame.image.load('../../PNG_File/car.png').convert_alpha() # Fuer Supervised Learning
+        #self.sprite = pygame.image.load('../PNG_File/car.png').convert_alpha() # Fuer Reinforcement Learning
+        self.sprite = pygame.image.load(car_png_path).convert_alpha()
+
         self.sprite = pygame.transform.scale(self.sprite, (CAR_SIZE_X, CAR_SIZE_Y))
         self.reset()
 

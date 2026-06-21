@@ -3,13 +3,13 @@ import sys
 import os
 
 from pathlib import Path
-from car import Car
-from map_loader import load_map
 
 # Projektwurzel SW_Project
-ROOT_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(ROOT_DIR))
 
+from car import Car
+from map_loader import load_map
 from Config.config_loader import load_config
 
 config = load_config()
@@ -37,7 +37,8 @@ def main():
     font_small = pygame.font.SysFont("Arial", 24)
     font_big = pygame.font.SysFont("Arial", 28)
 
-    car = Car()
+    car_png_path = '../../PNG_File/car.png'
+    car = Car(car_png_path)
 
    
     # Temporäre Daten des aktuellen Durchlaufs

@@ -8,7 +8,7 @@ import sys
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-CONFIG_PATH = BASE_DIR / "Supervised_Learning" / "Config" / "config.json"
+CONFIG_PATH = BASE_DIR / "Config" / "config.json"
 
 CLASSIFICATION_DATA_DIR = BASE_DIR / "Supervised_Learning" / "ai" / "data_file" / "classification_data"
 REGRESSION_DATA_DIR = BASE_DIR / "Supervised_Learning" / "ai" / "data_file" / "regression_data"
@@ -16,7 +16,7 @@ REGRESSION_DATA_DIR = BASE_DIR / "Supervised_Learning" / "ai" / "data_file" / "r
 CLASSIFICATION_MODELS_DIR = BASE_DIR / "Supervised_Learning" / "ai" / "models_file" / "classification_models"
 REGRESSION_MODELS_DIR = BASE_DIR / "Supervised_Learning" / "ai" / "models_file" / "regression_models"
 
-MAPS_DIR = BASE_DIR / "Supervised_Learning" / "race_simulation" / "PNG_File"
+MAPS_DIR = BASE_DIR / "PNG_File"
 
 def main():
     root = tk.Tk()
@@ -228,7 +228,7 @@ def train_model(model_type, model_box):
     if model_box.get():
         update_config_model(model_type, model_box.get())
 
-    train_path = BASE_DIR / "ai" / "train.py"
+    train_path = BASE_DIR / "Supervised_Learning" / "ai" / "train.py"
 
     subprocess.run(
         [sys.executable, str(train_path)],
@@ -380,7 +380,7 @@ def update_config_map(map_name):
 
     config.setdefault("ai_run", {})
 
-    map_path = str(Path("PNG_File") / map_name)
+    map_path = str(Path("../../PNG_File") / map_name)
 
     config["ai_run"]["map_file"] = map_path
     config["ai_run"]["map_path"] = map_path
