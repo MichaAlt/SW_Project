@@ -12,15 +12,18 @@ CONFIG_PATH = BASE_DIR / "Config" / "config.json"
 
 CLASSIFICATION_DATA_DIR = BASE_DIR / "Supervised_Learning" / "ai" / "data_file" / "classification_data"
 REGRESSION_DATA_DIR = BASE_DIR / "Supervised_Learning" / "ai" / "data_file" / "regression_data"
-
 CLASSIFICATION_MODELS_DIR = BASE_DIR / "Supervised_Learning" / "ai" / "models_file" / "classification_models"
 REGRESSION_MODELS_DIR = BASE_DIR / "Supervised_Learning" / "ai" / "models_file" / "regression_models"
+
+PPO_MODELS_DIR = BASE_DIR / "Reinforcement_Learning" / "models_file"/ "PPO_models_file"
+DDPG_MODELS_DIR = BASE_DIR / "Reinforcement_Learning" / "models_file"/ "DDPG_models_file"
+SAC_MODELS_DIR = BASE_DIR / "Reinforcement_Learning" / "models_file"/ "SAC_models_file"
 
 MAPS_DIR = BASE_DIR / "PNG_File"
 
 def main():
     root = tk.Tk()
-    root.title("AI Racing GUI")
+    root.title("GUI")
     root.geometry("1000x650")
     root.minsize(1000, 500)
     root.configure(background="gray")
@@ -47,9 +50,12 @@ def main():
         REGRESSION_MODELS_DIR
     )
 
+    rl_frame = create_rl_frame(content_frame)
+
     frames = {
         "classification": classification_frame,
-        "regression": regression_frame
+        "regression": regression_frame,
+        "reinforcement_learning" : rl_frame
     }
 
     def show_frame(frame_name):
@@ -68,6 +74,12 @@ def main():
         menu_frame,
         text="Regression",
         command=lambda: show_frame("regression")
+    ).pack(side="left", padx=5, pady=5)
+
+    ttk.Button(
+        menu_frame,
+        text="Reinforcement_Learning",
+        command=lambda: show_frame("reinforcement_learning")
     ).pack(side="left", padx=5, pady=5)
 
     show_frame("classification")
@@ -203,24 +215,16 @@ def get_folder_entries(folder):
 
 def create_model(text_widget, model_type, model_box, model_folder):
     model_name = text_widget.get("1.0", tk.END).strip()
-
-    if model_name == "":
-        model_name = "new_model"
-
-    if not model_name.endswith(".keras"):
-        model_name += ".keras"
-
+    if model_name == "":model_name = "new_model"
+    if not model_name.endswith(".keras"):model_name += ".keras"
     model_path = model_folder / model_name
     model_path.touch()
-
     model_box["values"] = get_folder_entries(model_folder)
     model_box.set(model_name)
 
     update_prediction_type(model_type)
     update_config_model(model_type, model_name)
-
     print(f"{model_type} model created: {model_path}")
-
 
 def train_model(model_type, model_box):
     update_prediction_type(model_type)
@@ -386,6 +390,210 @@ def update_config_map(map_name):
     config["ai_run"]["map_path"] = map_path
 
     save_config(config, backup)
+
+
+
+
+
+
+
+def create_rl_frame(parent):
+
+    frame = tk.Frame(parent, bg="gray")
+    tk.Label(frame,text="Reinforcement Learning",bg="gray",font=("Arial", 20)).pack(pady=15)
+    tk.Label(frame,text="Select RL Algorithm",bg="gray").pack()
+    algorithm_box = ttk.Combobox(frame,state="readonly")
+    algorithm_box["values"] = ["PPO","DDPG","SAC"]
+    algorithm_box.current(0)
+
+    update_config_algorithm_rl(algorithm_box.get())
+
+    algorithm_box.pack(padx=10,pady=5,fill="x")
+    tk.Label(frame,text="Select training model",bg="gray").pack()
+    train_model_box = ttk.Combobox(frame,state="readonly")
+    train_model_box["values"] = get_model_entries("PPO")
+
+    if train_model_box["values"]:
+        train_model_box.current(0)
+        update_config_train_model_rl("PPO",train_model_box.get())
+
+    train_model_box.pack(padx=10,pady=5,fill="x")
+    tk.Label(frame,text="Select run model",bg="gray").pack()
+    run_model_box = ttk.Combobox(frame,state="readonly")
+    run_model_box["values"] = get_model_entries("PPO")
+
+    if run_model_box["values"]:
+        run_model_box.current(0)
+        update_config_run_model_rl("PPO",run_model_box.get())
+
+    run_model_box.pack(padx=10,pady=5,fill="x")
+    tk.Label(frame,text="Select map",bg="gray").pack()
+    map_box = ttk.Combobox(frame,state="readonly")
+    map_box["values"] = get_folder_entries(MAPS_DIR)
+
+    if map_box["values"]:
+        map_box.current(0)
+        update_config_map_rl(map_box.get())
+
+    map_box.pack(padx=10,pady=5,fill="x")
+    tk.Label(frame,text="New model name",bg="gray").pack()
+    model_name_text = tk.Text(frame,height=1)
+    model_name_text.pack(padx=10,pady=5,fill="x")
+    ttk.Button(frame,text="Create new RL model",command=lambda: create_model_rl(model_name_text,algorithm_box,train_model_box,run_model_box)).pack(padx=80,pady=6,ipady=8,fill="x")
+    ttk.Button(frame,text="Train RL model",command=train_model_rl).pack(padx=80,pady=6,ipady=8,fill="x")
+    ttk.Button(frame,text="Run RL model",command=run_model_rl).pack(padx=80,pady=6,ipady=8,fill="x")
+
+    def algorithm_changed(event):
+
+        algorithm = algorithm_box.get()
+        values = get_model_entries(algorithm)
+        train_model_box["values"] = values
+        run_model_box["values"] = values
+
+        if values:
+            train_model_box.current(0)
+            run_model_box.current(0)
+            update_config_train_model_rl(algorithm,train_model_box.get())
+            update_config_run_model_rl(algorithm,run_model_box.get())
+
+        update_config_algorithm_rl(algorithm)
+
+    algorithm_box.bind("<<ComboboxSelected>>",algorithm_changed)
+
+    train_model_box.bind(
+        "<<ComboboxSelected>>",
+        lambda event:
+        update_config_train_model_rl(
+            algorithm_box.get(),
+            train_model_box.get()
+        )
+    )
+
+    run_model_box.bind("<<ComboboxSelected>>",lambda event:update_config_run_model_rl(algorithm_box.get(),run_model_box.get()))
+    map_box.bind("<<ComboboxSelected>>",lambda event:update_config_map_rl(map_box.get()))
+
+    return frame
+
+
+def get_model_dir(algorithm):
+
+    match algorithm:
+        case "PPO":
+            return PPO_MODELS_DIR
+        case "DDPG":
+            return DDPG_MODELS_DIR
+        case "SAC":
+            return SAC_MODELS_DIR
+
+
+def get_model_entries(algorithm):
+
+    folder = get_model_dir(algorithm)
+    folder.mkdir(parents=True,exist_ok=True)
+
+    return sorted([
+        f.name
+        for f in folder.iterdir()
+        if not f.name.startswith(".")
+        ])
+
+
+def create_model_rl(text_widget,algorithm_box,train_model_box,run_model_box):
+
+    model_name = text_widget.get("1.0",tk.END).strip()
+    if model_name == "":model_name = "new_model"
+    if not model_name.endswith(".zip"):model_name += ".zip"
+    algorithm = algorithm_box.get()
+    model_dir = get_model_dir(algorithm)
+    model_path = model_dir / model_name
+    model_path.touch()
+    values = get_model_entries(algorithm)
+    train_model_box["values"] = values
+    run_model_box["values"] = values
+    train_model_box.set(model_name)
+    run_model_box.set(model_name)
+
+    update_config_train_model_rl(algorithm,model_name)
+    update_config_run_model_rl(algorithm,model_name)
+    print(f"{algorithm} model created: {model_path}")
+
+def train_model_rl():
+
+    train_path = (BASE_DIR / "Reinforcement_Learning" / "train_rl.py")
+    subprocess.run([sys.executable, str(train_path)],cwd=str(BASE_DIR/"Reinforcement_Learning"))
+
+
+def run_model_rl():
+
+    run_path = (BASE_DIR  / "Reinforcement_Learning"/ "run_rl.py") 
+    subprocess.run([sys.executable, str(run_path)],cwd=str(BASE_DIR /"Reinforcement_Learning"))
+
+def update_config_algorithm_rl(algorithm):
+
+    config = load_config()
+
+    if config is None:return
+
+    backup = copy.deepcopy(config)
+
+    config["train_rl"]["rl_algorithm"] = algorithm
+    config["run_rl"]["rl_algorithm"] = algorithm
+
+    save_config(config,backup)
+
+
+def update_config_train_model_rl(algorithm,model_name):
+
+    config = load_config()
+
+    if config is None:
+        return
+
+    backup = copy.deepcopy(config)
+
+    match algorithm:
+        case "PPO":
+            config["train_rl"]["model_save_path_PPO"] = (f"models_file/PPO_models_file/{model_name}")
+        case "DDPG":
+            config["train_rl"]["model_save_path_DDPG"] = (f"models_file/DDPG_models_file/{model_name}")
+        case "SAC":
+            config["train_rl"]["model_save_path_SAC"] = (f"models_file/SAC_models_file/{model_name}")
+
+    save_config(config,backup)
+
+
+def update_config_run_model_rl(algorithm,model_name):
+
+    config = load_config()
+    
+    if config is None:
+        return
+
+    backup = copy.deepcopy(config)
+
+    match algorithm:
+        case "PPO":
+            config["run_rl"]["model_load_path_PPO"] = (f"models_file/PPO_models_file/{model_name}")
+        case "DDPG":
+            config["run_rl"]["model_load_path_DDPG"] = (f"models_file/DDPG_models_file/{model_name}")
+        case "SAC":
+            config["run_rl"]["model_load_path_SAC"] = (f"models_file/SAC_models_file/{model_name}")
+
+    save_config(config,backup)
+
+
+def update_config_map_rl(map_name):
+    config = load_config()
+
+    if config is None:
+        return
+
+    backup = copy.deepcopy(config)
+    map_path = str(Path("../PNG_File") / map_name)
+    config["train_rl"]["map_file"] = map_path
+    config["run_rl"]["map_file"] = map_path
+    save_config(config,backup)
+
 
 
 if __name__ == "__main__":
