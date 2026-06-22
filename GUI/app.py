@@ -138,9 +138,9 @@ def create_model_frame(parent, title, model_type, data_folder, model_folder, exp
     model_name_text.pack(padx=10, pady=5, fill="x")
 
     ttk.Button(frame,text=f"Create new {model_type} model",command=lambda: create_model(model_name_text,model_type,model_box,model_folder, experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
-    ttk.Button(frame,text=f"Start {model_type} data collection",command=lambda: manual_run(experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
+    ttk.Button(frame,text=f"Start {model_type} data collection",command=lambda: start_simulation("data_collection", experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
     ttk.Button(frame,text=f"Train {model_type} model",command=lambda: train_model(model_type, model_box, experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
-    ttk.Button(frame,text=f"Run {model_type} model",command=lambda: run_model(model_type, model_box, map_box, experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
+    ttk.Button(frame,text=f"Run {model_type} model",command=lambda: start_simulation("ai_run", experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
     
 
     tk.Label(frame, text="Select optimizer", bg="gray").pack()
@@ -182,6 +182,25 @@ def create_model(text_widget, model_type, model_box, model_folder, experimental)
     update_config_model(model_type, model_name, experimental)
     print(f"{model_type} model created: {model_path}")
 
+def start_simulation(mode, experimental):
+    update_mode(mode)
+
+    if experimental:
+        # erstmal wie bisher
+        if mode == "data_collection":
+            manual_run(True)
+        else:
+            run_model("regression",None,None,True)
+        return
+
+    simulation_path = (BASE_DIR /"Supervised_Learning" /"race_simulation" /"simulation.py")
+    simulation_dir = (BASE_DIR /"Supervised_Learning" /"race_simulation")
+
+    subprocess.run(
+        [sys.executable, str(simulation_path)],
+        cwd=str(simulation_dir)
+    )
+
 def train_model(model_type, model_box, experimental):
     update_prediction_type(model_type)
 
@@ -199,6 +218,18 @@ def train_model(model_type, model_box, experimental):
         [sys.executable, str(train_path)],
         cwd=str(working_dir)
     )
+
+def update_mode(mode):
+    config = load_config()
+
+    if config is None:
+        return
+
+    backup = copy.deepcopy(config)
+
+    config["mode"]["mode"] = mode
+
+    save_config(config, backup)
 
 def update_config_optimizer(optimizer_name):
     config = load_config()

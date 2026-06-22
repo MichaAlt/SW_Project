@@ -1,7 +1,7 @@
 {
     "train": {
         "data_file_classification": "data_file/classification_data/training_data.csv",
-        "data_file_regression": "data_file/regression_data/training_data_1.csv",
+        "data_file_regression": "data_file/regression_data/loeschenr.csv",
         "n_train": 14000,
         "epochs": 150,
         "batch_size": 30,
@@ -42,7 +42,7 @@
         "method": 1
     },
     "prediction": {
-        "prediction": "regression"
+        "prediction": "classification"
     },
     "train_regression_exp": {
         "data_file": "ai/data_file/auto_collect_speed_auto6.csv",
