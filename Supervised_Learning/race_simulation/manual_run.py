@@ -32,7 +32,7 @@ def main():
     pygame.init()
     
     screen, game_map ,display_map, scale, offset_x, offset_y = load_map(manual_cfg["map_file"], WIDTH, HEIGHT)
-    pygame.display.set_caption("Car mit Sensoren")
+    pygame.display.set_caption("Auto mit Sensoren")
     clock = pygame.time.Clock()
     font_small = pygame.font.SysFont("Arial", 24)
     font_big = pygame.font.SysFont("Arial", 28)

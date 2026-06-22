@@ -5,7 +5,7 @@ from data_loader_exp import load_data
 from model_exp import create_model
 
 # Projektwurzel SW_Project
-ROOT_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(ROOT_DIR))
 
 from Config.config_loader import load_config

@@ -38,7 +38,7 @@ def main():
     screen, game_map, display_map, scale, offset_x, offset_y = load_map(
         ai_cfg["map_file"], WIDTH, HEIGHT
     )
-    pygame.display.set_caption("Car mit Sensoren")
+    pygame.display.set_caption("Auto mit Sensoren")
     clock = pygame.time.Clock()
     font_small = pygame.font.SysFont("Arial", 24)
     font_big = pygame.font.SysFont("Arial", 28)
@@ -59,6 +59,9 @@ def main():
 
         car.update(game_map)
         car.draw(screen, font_small, scale, offset_x, offset_y)
+
+        pygame.display.flip()
+        clock.tick(60)
 
         # KI-Modell
         if len(car.radar_values) == 5:
@@ -111,10 +114,6 @@ def main():
         elif prediction_cfg["prediction"] == "regression":
             car.speed = speed
             car.angle += steer
-
-
-        pygame.display.flip()
-        clock.tick(60)
 
         # Ereignisbehandlung
         for event in pygame.event.get():

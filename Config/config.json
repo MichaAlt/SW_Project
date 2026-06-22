@@ -13,8 +13,11 @@
     "model": {
         "optimizer": "adam"
     },
+    "mode": {
+        "mode": "data_collection"
+    },
     "ai_run": {
-        "map_file": "../../PNG_File/map4.png",
+        "map_file": "../../PNG_File/car.png",
         "model_path_classification": "../ai/models_file/classification_models/loeschen.keras",
         "model_path_regression": "../ai/models_file/regression_models/loeschen.keras",
         "width": "auto",
@@ -22,12 +25,12 @@
         "forward_speed": 5,
         "backward_speed": -5,
         "turn_angle": 3,
-        "map_path": "../../PNG_File/map4.png"
+        "map_path": "../../PNG_File/car.png"
     },
     "manual_run": {
         "map_file": "../../PNG_File/map5.png",
-        "data_save_path_classification": "../ai/data_file/classification_data/training_data.csv",
-        "data_save_path_regression": "../ai/data_file/regression_data/training_data1.csv",
+        "data_save_path_classification": "../ai/data_file/classification_data/loeschenc.csv",
+        "data_save_path_regression": "../ai/data_file/regression_data/loeschenr.csv",
         "width": "auto",
         "height": "auto",
         "forward_speed": 5,
@@ -41,33 +44,25 @@
     "prediction": {
         "prediction": "regression"
     },
-
-
-
-
-
-
     "train_regression_exp": {
-        "data_file": "data_file/auto_collect_speed_auto6.csv",
+        "data_file": "ai/data_file/auto_collect_speed_auto6.csv",
         "n_train": 6000,
         "epochs": 150,
         "batch_size": 20,
-        "model_save_path": "models_file/loeschen.keras"
+        "model_save_path": "models_file/TestTestHaha.keras"
     },
-
     "ai_run_exp": {
-        "map_file": "../../PNG_File/map5.png",
-        "model_path": "../ai/models_file/loeschen.keras",
+        "map_file": "../../PNG_File/map1.png",
+        "model_path": "../ai/models_file/TestTestHaha.keras",
         "width": "auto",
         "height": "auto",
         "forward_speed_max": 5.0,
         "speed_multiplier": 3.0,
         "max_turn_per_step": 20
     },
-
     "manual_run_exp": {
-        "map_file": "../../PNG_File/map5.png",
-        "data_save_path_regression": "../ai/data_file/loescheeeeeeen.csv",
+        "map_file": "../../PNG_File/map1.png",
+        "data_save_path_regression": "../ai/data_file/test.csv",
         "width": "auto",
         "height": "auto",
         "forward_speed": 5,
@@ -75,45 +70,33 @@
         "turn_angle": 3,
         "turn_angle_soft": 1.5
     },
-
     "auto_collect_centerline_exp": {
-        "map_file": "../../PNG_File/map5.png",
+        "map_file": "../../PNG_File/map1.png",
         "data_save_path": "../ai/data_file/loescheeeeeeen.csv",
         "width": "auto",
         "height": "auto",
-
         "lookahead_distance": 8,
         "base_speed_max": 5.0,
         "reference_fps": 60.0,
         "max_turn_per_step": 3.0,
-
         "side_error_gain": 0.05,
         "front_error_gain": 0.08,
         "front_close_extra_gain": 0.04,
         "front_close_threshold": 35,
-
         "speed_front_very_close": 20,
         "speed_front_close": 35,
         "speed_turn_hard": 0.6,
         "speed_turn_medium": 0.3,
-
         "speed_very_slow": 1.2,
         "speed_slow": 1.8,
         "speed_medium": 2.2,
         "speed_fast": 5.0,
-
         "lap_min_frames": 300,
         "lap_save_radius": 50,
         "lap_reset_radius": 100
     },
-
-
-
-
-
-    
     "train_rl": {
-        "map_file": "../PNG_File/map1.png",
+        "map_file": "../PNG_File/car.png",
         "model_load_path_PPO": "models_file/PPO_models_file/model_2",
         "model_save_path_PPO": "models_file/PPO_models_file/loeschen",
         "model_load_path_DDPG": "models_file/DDPG_models_file/model_1",
@@ -126,8 +109,8 @@
         "n_envs": 4
     },
     "run_rl": {
-        "map_file": "../PNG_File/map1.png",
-        "model_load_path_PPO": "models_file/PPO_models_file/loeschen.zip",
+        "map_file": "../PNG_File/car.png",
+        "model_load_path_PPO": "models_file/PPO_models_file/loeschen",
         "model_load_path_DDPG": "models_file/DDPG_models_file/model_1.zip",
         "model_load_path_SAC": "models_file/SAC_models_file/model_combined_fin",
         "rl_algorithm": "PPO"
