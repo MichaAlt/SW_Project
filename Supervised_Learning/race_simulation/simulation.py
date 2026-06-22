@@ -17,6 +17,7 @@ config = load_config()
 mode_cfg = config["mode"]
 manual_cfg = config["manual_run"]
 ai_cfg = config["ai_run"]
+simulation_cfg = config["simulation"]
 feature_scaling_cfg = config["feature_scaling"]
 prediction_cfg = config["prediction"]
 
@@ -35,7 +36,7 @@ def main():
     os.environ["SDL_RENDER_DRIVER"] = "opengl"
     pygame.init()
     
-    screen, game_map ,display_map, scale, offset_x, offset_y = load_map(manual_cfg["map_file"], WIDTH, HEIGHT)
+    screen, game_map ,display_map, scale, offset_x, offset_y = load_map(simulation_cfg["map_file"], WIDTH, HEIGHT)
     pygame.display.set_caption("Auto mit Sensoren")
     clock = pygame.time.Clock()
     font_small = pygame.font.SysFont("Arial", 24)

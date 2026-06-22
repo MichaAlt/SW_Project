@@ -138,9 +138,9 @@ def create_model_frame(parent, title, model_type, data_folder, model_folder, exp
     model_name_text.pack(padx=10, pady=5, fill="x")
 
     ttk.Button(frame,text=f"Create new {model_type} model",command=lambda: create_model(model_name_text,model_type,model_box,model_folder, experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
-    ttk.Button(frame,text=f"Start {model_type} data collection",command=lambda: start_simulation("data_collection",model_type,model_box,experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
+    ttk.Button(frame,text=f"Start {model_type} data collection",command=lambda: start_simulation("data_collection",model_type,model_box,map_box,experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
     ttk.Button(frame,text=f"Train {model_type} model",command=lambda: train_model(model_type, model_box, experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
-    ttk.Button(frame,text=f"Run {model_type} model",command=lambda: start_simulation("ai_run",model_type,model_box,experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
+    ttk.Button(frame,text=f"Run {model_type} model",command=lambda: start_simulation("ai_run",model_type,model_box,map_box,experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
     
 
     tk.Label(frame, text="Select optimizer", bg="gray").pack()
@@ -182,7 +182,7 @@ def create_model(text_widget, model_type, model_box, model_folder, experimental)
     update_config_model(model_type, model_name, experimental)
     print(f"{model_type} model created: {model_path}")
 
-def start_simulation(mode, model_type, model_box, experimental):
+def start_simulation(mode, model_type, model_box, map_box ,experimental):
     update_mode(mode)
 
     update_prediction_type(model_type)
@@ -190,12 +190,15 @@ def start_simulation(mode, model_type, model_box, experimental):
     if model_box.get():
         update_config_model(model_type, model_box.get(), experimental)
 
+    if map_box.get():
+        update_config_map(map_box.get())
+
+    # Wird geandert, wenn manual_run und ai_run von Supervised_Learning_Experimental zuammengefuegt werden
     if experimental:
-        # erstmal wie bisher
         if mode == "data_collection":
             manual_run(True)
         else:
-            run_model("regression",None,None,True)
+            run_model("regression",model_box,map_box,experimental)
         return
 
     simulation_path = (BASE_DIR /"Supervised_Learning" /"race_simulation" /"simulation.py")
@@ -417,8 +420,7 @@ def update_config_map(map_name):
 
     map_path = str(Path("../../PNG_File") / map_name)
 
-    config["ai_run"]["map_file"] = map_path
-    config["ai_run"]["map_path"] = map_path
+    config["simulation"]["map_file"] = map_path
 
     save_config(config, backup)
 

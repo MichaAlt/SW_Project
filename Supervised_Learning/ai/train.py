@@ -109,13 +109,13 @@ history = model.fit(
 )
 
 if prediction_cfg["prediction"] == "classification":
-    save_path = Path.cwd() / "Supervised_Learning" / "ai" / train_cfg["model_save_path_classification"]
+    save_path = Path.cwd() / ".." / "Supervised_Learning" / "ai" / train_cfg["model_save_path_classification"]
 
 elif prediction_cfg["prediction"] == "regression":
-    save_path = Path.cwd() / "Supervised_Learning" /"ai" / train_cfg["model_save_path_regression"]
+    save_path = Path.cwd() / ".." /"Supervised_Learning" /"ai" / train_cfg["model_save_path_regression"]
 
 else:
     raise ValueError("prediction muss classification oder regression sein")
 
 model.save(save_path)
-print(f"Modell gespeichert als {save_path}")
+print("Modell gespeichert!")

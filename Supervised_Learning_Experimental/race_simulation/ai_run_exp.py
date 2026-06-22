@@ -15,6 +15,7 @@ from Config.config_loader import load_config
 
 config = load_config()
 ai_cfg = config["ai_run_exp"]
+simulation_cfg = config["simulation"]
 
 
 def get_screen_size(cfg):
@@ -51,7 +52,7 @@ def main():
     pygame.init()
 
     screen, game_map, display_map, scale, offset_x, offset_y = load_map(
-        ai_cfg["map_file"], WIDTH, HEIGHT
+        simulation_cfg["map_file"], WIDTH, HEIGHT
     )
     pygame.display.set_caption("Car mit Sensoren")
     clock = pygame.time.Clock()

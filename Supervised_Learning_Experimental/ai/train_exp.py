@@ -39,5 +39,6 @@ for key, value in results.items():
     print(f"{key}: {value}")
 
 # Modell speichern
-model.save(train_cfg["model_save_path"])
-print(f"Modell gespeichert als {train_cfg['model_save_path']}")
+save_path = Path.cwd() / ".." / "Supervised_Learning_Experimental" / "ai" / train_cfg["model_save_path"]
+model.save(save_path)
+print("Modell gespeichert!") 
