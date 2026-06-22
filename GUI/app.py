@@ -15,6 +15,9 @@ REGRESSION_DATA_DIR = BASE_DIR / "Supervised_Learning" / "ai" / "data_file" / "r
 CLASSIFICATION_MODELS_DIR = BASE_DIR / "Supervised_Learning" / "ai" / "models_file" / "classification_models"
 REGRESSION_MODELS_DIR = BASE_DIR / "Supervised_Learning" / "ai" / "models_file" / "regression_models"
 
+REGRESSION_EXPERIMENTAL_DATA_DIR = BASE_DIR / "Supervised_Learning_Experimental" / "ai" / "data_file"
+REGRESSION_EXPERIMENTAL_MODELS_DIR = BASE_DIR / "Supervised_Learning_Experimental" / "ai" / "models_file" 
+
 PPO_MODELS_DIR = BASE_DIR / "Reinforcement_Learning" / "models_file"/ "PPO_models_file"
 DDPG_MODELS_DIR = BASE_DIR / "Reinforcement_Learning" / "models_file"/ "DDPG_models_file"
 SAC_MODELS_DIR = BASE_DIR / "Reinforcement_Learning" / "models_file"/ "SAC_models_file"
@@ -42,6 +45,7 @@ def main():
         CLASSIFICATION_MODELS_DIR
     )
 
+
     regression_frame = create_model_frame(
         content_frame,
         "Regression",
@@ -50,11 +54,21 @@ def main():
         REGRESSION_MODELS_DIR
     )
 
+    regression_experimental_frame = create_model_frame(
+        content_frame,
+        "Regression",
+        "regression",
+        REGRESSION_EXPERIMENTAL_DATA_DIR,
+        REGRESSION_EXPERIMENTAL_MODELS_DIR,
+        True
+    )
+
     rl_frame = create_rl_frame(content_frame)
 
     frames = {
         "classification": classification_frame,
         "regression": regression_frame,
+        "regression_experimental": regression_experimental_frame,
         "reinforcement_learning" : rl_frame
     }
 
@@ -66,13 +80,14 @@ def main():
 
     ttk.Button(menu_frame,text="Classification",command=lambda: show_frame("classification")).pack(side="left", padx=5, pady=5)
     ttk.Button(menu_frame,text="Regression",command=lambda: show_frame("regression")).pack(side="left", padx=5, pady=5)
+    ttk.Button(menu_frame,text="Regression_Experimental",command=lambda: show_frame("regression_experimental")).pack(side="left", padx=5, pady=5)
     ttk.Button(menu_frame,text="Reinforcement_Learning",command=lambda: show_frame("reinforcement_learning")).pack(side="left", padx=5, pady=5)
 
     show_frame("classification")
     root.mainloop()
 
 
-def create_model_frame(parent, title, model_type, data_folder, model_folder):
+def create_model_frame(parent, title, model_type, data_folder, model_folder, experimental=False):
     frame = tk.Frame(parent, bg="gray")
 
     tk.Label(frame,text=f"{title} Model",bg="gray",font=("Arial", 20)).pack(pady=15)
@@ -83,11 +98,11 @@ def create_model_frame(parent, title, model_type, data_folder, model_folder):
 
     if data_box["values"]:
         data_box.current(0)
-        update_config_data(model_type, data_box.get())
+        update_config_data(model_type, data_box.get(), experimental)
 
     data_box.model_type = model_type
     data_box.config_key = "data"
-    data_box.bind("<<ComboboxSelected>>", config_changed)
+    data_box.bind("<<ComboboxSelected>>",  lambda e: config_changed(e, experimental))
     data_box.pack(padx=10, pady=5, fill="x")
 
     tk.Label(frame, text="Select model", bg="gray").pack()
@@ -97,11 +112,11 @@ def create_model_frame(parent, title, model_type, data_folder, model_folder):
 
     if model_box["values"]:
         model_box.current(0)
-        update_config_model(model_type, model_box.get())
+        update_config_model(model_type, model_box.get(), experimental)
 
     model_box.model_type = model_type
     model_box.config_key = "model"
-    model_box.bind("<<ComboboxSelected>>", config_changed)
+    model_box.bind("<<ComboboxSelected>>",  lambda e: config_changed(e, experimental))
     model_box.pack(padx=10, pady=5, fill="x")
 
     tk.Label(frame, text="Select map", bg="gray").pack()
@@ -114,7 +129,7 @@ def create_model_frame(parent, title, model_type, data_folder, model_folder):
         update_config_map(map_box.get())
 
     map_box.config_key = "map"
-    map_box.bind("<<ComboboxSelected>>", config_changed)
+    map_box.bind("<<ComboboxSelected>>",  lambda e: config_changed(e, experimental))
     map_box.pack(padx=10, pady=5, fill="x")
 
     tk.Label(frame, text="New model name", bg="gray").pack()
@@ -122,21 +137,12 @@ def create_model_frame(parent, title, model_type, data_folder, model_folder):
     model_name_text = tk.Text(frame, height=1)
     model_name_text.pack(padx=10, pady=5, fill="x")
 
-    ttk.Button(
-        frame,
-        text=f"Create new {model_type} model",
-        command=lambda: create_model(
-            model_name_text,
-            model_type,
-            model_box,
-            model_folder
-        )
-    ).pack(padx=80,pady=6,ipady=8,fill="x")
+    ttk.Button(frame,text=f"Create new {model_type} model",command=lambda: create_model(model_name_text,model_type,model_box,model_folder, experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
+    ttk.Button(frame,text=f"Start {model_type} data collection",command=lambda: manual_run(experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
+    ttk.Button(frame,text=f"Train {model_type} model",command=lambda: train_model(model_type, model_box, experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
+    ttk.Button(frame,text=f"Run {model_type} model",command=lambda: run_model(model_type, model_box, map_box, experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
+    
 
-    ttk.Button(frame,text=f"Train {model_type} model",command=lambda: train_model(model_type, model_box)).pack(padx=80,pady=6,ipady=8,fill="x"
-)
-
-    ttk.Button(frame,text=f"Run {model_type} model",command=lambda: run_model(model_type, model_box, map_box)).pack(padx=80,pady=6,ipady=8,fill="x")
     tk.Label(frame, text="Select optimizer", bg="gray").pack()
 
     optimizer_box = ttk.Combobox(frame, state="readonly")
@@ -148,7 +154,7 @@ def create_model_frame(parent, title, model_type, data_folder, model_folder):
     update_config_optimizer(optimizer_box.get())
 
     optimizer_box.config_key = "optimizer"
-    optimizer_box.bind("<<ComboboxSelected>>", config_changed)
+    optimizer_box.bind("<<ComboboxSelected>>",  lambda e: config_changed(e, experimental))
 
     optimizer_box.pack(padx=10,pady=5,fill="x")
     return frame
@@ -163,8 +169,7 @@ def get_folder_entries(folder):
         if not f.name.startswith(".")
     ])
 
-
-def create_model(text_widget, model_type, model_box, model_folder):
+def create_model(text_widget, model_type, model_box, model_folder, experimental):
     model_name = text_widget.get("1.0", tk.END).strip()
     if model_name == "":model_name = "new_model"
     if not model_name.endswith(".keras"):model_name += ".keras"
@@ -174,20 +179,25 @@ def create_model(text_widget, model_type, model_box, model_folder):
     model_box.set(model_name)
 
     update_prediction_type(model_type)
-    update_config_model(model_type, model_name)
+    update_config_model(model_type, model_name, experimental)
     print(f"{model_type} model created: {model_path}")
 
-def train_model(model_type, model_box):
+def train_model(model_type, model_box, experimental):
     update_prediction_type(model_type)
 
     if model_box.get():
-        update_config_model(model_type, model_box.get())
+        update_config_model(model_type, model_box.get(), experimental)
 
-    train_path = BASE_DIR / "Supervised_Learning" / "ai" / "train.py"
+    if experimental:
+        train_path = BASE_DIR / "Supervised_Learning_Experimental" / "ai" / "train_exp.py"
+        working_dir = BASE_DIR / "Supervised_Learning_Experimental"
+    else:
+        train_path = BASE_DIR / "Supervised_Learning" / "ai" / "train.py"
+        working_dir = BASE_DIR / "Supervised_Learning"
 
     subprocess.run(
         [sys.executable, str(train_path)],
-        cwd=str(BASE_DIR)
+        cwd=str(working_dir)
     )
 
 def update_config_optimizer(optimizer_name):
@@ -203,17 +213,36 @@ def update_config_optimizer(optimizer_name):
     config["model"]["optimizer"] = optimizer_name
 
     save_config(config, backup)
-def run_model(model_type, model_box, map_box):
+
+def manual_run(experimental):
+
+    if experimental == False:
+        manual_run_path = (BASE_DIR/"Supervised_Learning"/"race_simulation"/"manual_run.py")
+        race_simulation_dir = BASE_DIR  / "Supervised_Learning" / "race_simulation"
+    else: 
+        manual_run_path = (BASE_DIR/"Supervised_Learning_Experimental"/"race_simulation"/"manual_run_exp.py")
+        race_simulation_dir = BASE_DIR  / "Supervised_Learning_Experimental" / "race_simulation"
+
+    subprocess.run(
+        [sys.executable, str(manual_run_path)],
+        cwd=str(race_simulation_dir)
+    )
+
+def run_model(model_type, model_box, map_box, experimental):
     update_prediction_type(model_type)
 
     if model_box.get():
-        update_config_model(model_type, model_box.get())
+        update_config_model(model_type, model_box.get(), experimental)
 
     if map_box.get():
         update_config_map(map_box.get())
 
-    ai_run_path = BASE_DIR / "Supervised_Learning" / "race_simulation" / "ai_run.py"
-    race_simulation_dir = BASE_DIR  / "Supervised_Learning" / "race_simulation"
+    if experimental == False:
+        ai_run_path = BASE_DIR / "Supervised_Learning" / "race_simulation" / "ai_run.py"
+        race_simulation_dir = BASE_DIR  / "Supervised_Learning" / "race_simulation"
+    else:
+        ai_run_path = BASE_DIR / "Supervised_Learning_Experimental" / "race_simulation" / "ai_run_exp.py"
+        race_simulation_dir = BASE_DIR  / "Supervised_Learning_Experimental" / "race_simulation"
 
     if not ai_run_path.exists():
         print(f"ai_run.py not found: {ai_run_path}")
@@ -227,14 +256,14 @@ def run_model(model_type, model_box, map_box):
     )
 
 
-def config_changed(event):
+def config_changed(event, experimental):
     widget = event.widget
 
     if widget.config_key == "data":
-        update_config_data(widget.model_type, widget.get())
+        update_config_data(widget.model_type, widget.get(), experimental)
 
     elif widget.config_key == "model":
-        update_config_model(widget.model_type, widget.get())
+        update_config_model(widget.model_type, widget.get(), experimental)
 
     elif widget.config_key == "map":
         update_config_map(widget.get())
@@ -275,7 +304,7 @@ def update_prediction_type(model_type):
     save_config(config, backup)
 
 
-def update_config_data(model_type, file_name):
+def update_config_data(model_type, file_name, experimental = False):
     config = load_config()
 
     if config is None:
@@ -290,14 +319,19 @@ def update_config_data(model_type, file_name):
         )
 
     elif model_type == "regression":
-        config["train"]["data_file_regression"] = str(
-            Path("data_file") / "regression_data" / file_name
+        if experimental == False:
+            config["train"]["data_file_regression"] = str(
+                Path("data_file") / "regression_data" / file_name
+            )
+        else: 
+            config["train_regression_exp"]["data_file"] = str(
+                Path("ai") / "data_file" / file_name
         )
 
     save_config(config, backup)
 
 
-def update_config_model(model_type, model_name):
+def update_config_model(model_type, model_name, experimental = False):
     config = load_config()
 
     if config is None:
@@ -316,11 +350,21 @@ def update_config_model(model_type, model_name):
         config["ai_run"]["model_path_classification"] = str(run_path)
 
     elif model_type == "regression":
-        train_path = Path("models_file") / "regression_models" / model_name
-        run_path = Path("..") / "ai" / "models_file" / "regression_models" / model_name
+        if experimental == False:
+            train_path = Path("models_file") / "regression_models" / model_name
+            run_path = Path("..") / "ai" / "models_file" / "regression_models" / model_name
 
-        config["train"]["model_save_path_regression"] = str(train_path)
-        config["ai_run"]["model_path_regression"] = str(run_path)
+            config["train"]["model_save_path_regression"] = str(train_path)
+            config["ai_run"]["model_path_regression"] = str(run_path)
+        else:
+            config.setdefault("train_regression_exp", {})
+            config.setdefault("ai_run_exp", {})
+
+            train_path = Path("models_file") / model_name
+            run_path = Path("..") / "ai" / "models_file" / model_name
+
+            config["train_regression_exp"]["model_save_path"] = str(train_path)
+            config["ai_run_exp"]["model_path"] = str(run_path)
 
     save_config(config, backup)
 
