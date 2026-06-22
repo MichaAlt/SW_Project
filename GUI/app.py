@@ -138,9 +138,9 @@ def create_model_frame(parent, title, model_type, data_folder, model_folder, exp
     model_name_text.pack(padx=10, pady=5, fill="x")
 
     ttk.Button(frame,text=f"Create new {model_type} model",command=lambda: create_model(model_name_text,model_type,model_box,model_folder, experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
-    ttk.Button(frame,text=f"Start {model_type} data collection",command=lambda: start_simulation("data_collection", experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
+    ttk.Button(frame,text=f"Start {model_type} data collection",command=lambda: start_simulation("data_collection",model_type,model_box,experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
     ttk.Button(frame,text=f"Train {model_type} model",command=lambda: train_model(model_type, model_box, experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
-    ttk.Button(frame,text=f"Run {model_type} model",command=lambda: start_simulation("ai_run", experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
+    ttk.Button(frame,text=f"Run {model_type} model",command=lambda: start_simulation("ai_run",model_type,model_box,experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
     
 
     tk.Label(frame, text="Select optimizer", bg="gray").pack()
@@ -182,8 +182,13 @@ def create_model(text_widget, model_type, model_box, model_folder, experimental)
     update_config_model(model_type, model_name, experimental)
     print(f"{model_type} model created: {model_path}")
 
-def start_simulation(mode, experimental):
+def start_simulation(mode, model_type, model_box, experimental):
     update_mode(mode)
+
+    update_prediction_type(model_type)
+
+    if model_box.get():
+        update_config_model(model_type, model_box.get(), experimental)
 
     if experimental:
         # erstmal wie bisher
