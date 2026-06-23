@@ -13,6 +13,7 @@ from car import Car
 from map_loader import load_map
 from Config.config_loader import load_config
 
+# Benoetigte Konfigurationen laden
 config = load_config()
 mode_cfg = config["mode"]
 manual_cfg = config["manual_run"]
@@ -21,6 +22,7 @@ simulation_cfg = config["simulation"]
 feature_scaling_cfg = config["feature_scaling"]
 prediction_cfg = config["prediction"]
 
+# Funktion zur Abfrage der Bildschirmgroesse
 def get_screen_size(cfg):
     pygame.init()
     info = pygame.display.Info()
@@ -30,6 +32,7 @@ def get_screen_size(cfg):
 
     return cfg["width"], cfg["height"]
 
+# Bildschirmgroesse ermitteln
 WIDTH, HEIGHT = get_screen_size(manual_cfg)
 
 def main():
@@ -45,23 +48,24 @@ def main():
     car_png_path = '../../PNG_File/car.png'
     car = Car(car_png_path)
 
+    # "data_collection" übernimmt die Funktion der Datensammlung durch manuelles abfahren der ausgeweahlten Strecke.
+    # "ai_run" ist die Funktion, bei dem trainierte KI-Modelle die ausgeweahlte Strecke abfahren.
     if mode_cfg["mode"] == "data_collection":
         # Temporäre Daten des aktuellen Durchlaufs
         current_run_data = []
 
-        # Dateipfad für die Trainingsdaten
+        # Dateipfad für die Trainingsdaten, abhaengig von Prediction-Methode
         if prediction_cfg["prediction"] == "classification":
-            save_path = manual_cfg["data_save_path_classification"]
+            save_path = simulation_cfg["data_save_path_classification"]
 
         elif prediction_cfg["prediction"] == "regression":
-            save_path = manual_cfg["data_save_path_regression"]
+            save_path = simulation_cfg["data_save_path_regression"]
 
-        file_path = os.path.join(
-            os.path.dirname(__file__),
-            save_path
-        )
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        # Speicherpfad laden
+        file_path = ROOT_DIR / "Supervised_Learning" / "ai" / save_path
+        file_path.parent.mkdir(parents=True, exist_ok=True)
 
+    # Modell laden, abhaengig von Prediction-Methode
     if mode_cfg["mode"] == "ai_run":
         # KI-Modell laden
         if prediction_cfg["prediction"] == "classification":
@@ -69,6 +73,7 @@ def main():
         elif prediction_cfg["prediction"] == "regression":
             model = tf.keras.models.load_model(ai_cfg["model_path_regression"])
 
+    # Simulationsschleife 
     running = True
     while running:
         screen.fill((0, 0, 0))
@@ -85,30 +90,34 @@ def main():
         text_surface = font_big.render(sensor_text, True, (255, 255, 0))
         screen.blit(text_surface, (50, 50))
 
+        # Datensammlung durch manuelles fahren
         if mode_cfg["mode"] == "data_collection":
             keys = pygame.key.get_pressed()
 
             # Steuerung des Autos
             actions = []
 
+            # Steuerung beim Datensammeln, abhaengig von Prediction-Methode
+            # Steuerung fuer Mehrklassifikation
             if prediction_cfg["prediction"] == "classification":
-                if keys[pygame.K_w]:
+                if keys[pygame.K_w]: # Vorwaerts fahren
                     car.speed = manual_cfg["forward_speed"]
                     actions.append("W")
-                elif keys[pygame.K_s]:
+                elif keys[pygame.K_s]: # Rueckwaerts fahren (Nicht verwendet)
                     car.speed = manual_cfg["backward_speed"]
                     actions.append("S")
-                else:
+                else:  # Wenn Auto gecrasht
                     if car.alive:
                         car.speed = 0
 
-                if keys[pygame.K_a]:
+                if keys[pygame.K_a]: # Links lenken
                     car.angle += manual_cfg["turn_angle"]
                     actions.append("A")
-                if keys[pygame.K_d]:
+                if keys[pygame.K_d]: # Rechts Lenken
                     car.angle -= manual_cfg["turn_angle"]
                     actions.append("D")
 
+            # Steuerung fuer Regression
             elif prediction_cfg["prediction"] == "regression":
 
                 if keys[pygame.K_w]:
@@ -157,9 +166,11 @@ def main():
             if not car.alive:
                 current_run_data.clear()
 
+        # KI-Modell. Trainiertes Modell faehrt auf der Strecke
         if mode_cfg["mode"] == "ai_run":
-            # KI-Modell
+            
             if len(car.radar_values) == 5:
+                # Umwandlung der Radarwerte in ein NumPy-Array fuer die Prediction
                 x_input = np.array(car.radar_values, dtype=np.float32).reshape(1, -1) 
 
                 if feature_scaling_cfg["method"] == 1: # Normalisieren
@@ -169,7 +180,7 @@ def main():
                     std = np.load("../ai/data_file/std.npy")
                     x_input = (x_input - mean) / std
 
-
+                # Prediction des trainierten Modells
                 pred = model(x_input, training=False)
                 if prediction_cfg["prediction"] == "classification":
                     action_index = np.argmax(pred[0])
@@ -177,10 +188,11 @@ def main():
                     actions = mapping[action_index].split("+")
 
                 elif prediction_cfg["prediction"] == "regression":
-                    speed = float(pred[0][0]) # Tensor verursacht bei Regression-Vorhersage Perfomanceprobleme (FPS brechen ein), deshalb casting auf float
+                    # Prediction-Tensor verursacht bei Regression-Vorhersage Perfomanceprobleme, deshalb casting auf float
+                    speed = float(pred[0][0]) 
                     steer = float(pred[0][1])
 
-            else:  # Beim Crash ist InputArray leer, dadurch Programmabsturz, fuer die Zeit kein predict
+            else:  # Nach einem Crash ist das InputArray leer. Deshalb keine Ausfuehrung einer Vorhersage, um Programmabsturz zu vermeiden. 
                 if prediction_cfg["prediction"] == "classification":
                     actions = ["W"]
                 elif prediction_cfg["prediction"] == "regression":
@@ -188,6 +200,8 @@ def main():
                     steer = 0
 
             car.speed = 0
+
+            # Ausfuehrung von Actions
             if prediction_cfg["prediction"] == "classification":
                 if "W" in actions:
                     car.speed = ai_cfg["forward_speed"]
@@ -204,11 +218,18 @@ def main():
 
         # Ereignisbehandlung
         for event in pygame.event.get():
+            
+            # Beenden der Simulation beim schließen des Fensters
             if event.type == pygame.QUIT:
                 running = False
+            
             elif event.type == pygame.KEYDOWN:
+                
+                # Beenden der Simulation durch Esc- oder Q-Taste
                 if event.key in [pygame.K_ESCAPE, pygame.K_q]:
                     running = False
+                
+                # Speichern der temporaeren Daten in eine CSV-Datei durch P-Taste
                 elif (event.key == pygame.K_p) & (mode_cfg["mode"] == "data_collection"):
                     with open(file_path, "a") as f:
                         for row in current_run_data:
@@ -219,6 +240,7 @@ def main():
                             elif prediction_cfg["prediction"] == "regression":
                                 row_len = 7
 
+                            # Nur speichern der jeweiligen Zeile, wenn Spaltenanzahl der Daten korrekt
                             if len(row) == row_len:
                                 f.write(line + "\n")
                     print("Runde gespeichert!")

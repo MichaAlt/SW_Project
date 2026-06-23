@@ -22,6 +22,7 @@ def load_data(file_path, n_train=3000, batch_size=30):
     # Trainingsdaten auslesen
     data = pd.read_csv(ROOT_DIR /"Supervised_Learning"/ "ai" / file_path)
 
+    # Prediction per Mehrklassifikation
     if prediction_cfg["prediction"] == "classification":
         # Spaltennamen festlegen
         data.columns = ["r_right", "r_right_front", "r_front","r_left_front", "r_left", "action"]
@@ -35,8 +36,9 @@ def load_data(file_path, n_train=3000, batch_size=30):
         x = data.drop("action", axis=1).values
         y = data["action"].values
 
+    # Prediction per Regression
     elif prediction_cfg["prediction"] == "regression":
-          # Spaltennamen festlegen
+        # Spaltennamen festlegen
         data.columns = ["r_right", "r_right_front", "r_front","r_left_front", "r_left", "speed", "steering"]
 
         # In Features und Labels aufteilen
@@ -56,14 +58,12 @@ def load_data(file_path, n_train=3000, batch_size=30):
     # Gesamtdataset bauen
     ds = tf.data.Dataset.from_tensor_slices((x, y))
 
-    # Train/Test Split
+    # Aufteilen in Trainings- und Validierungsdaten
     train_ds = ds.take(n_train)
-    test_ds = ds.skip(n_train)
+    validation_ds = ds.skip(n_train)
     
-    train_ds_features = ds.take(n_train).map(lambda x, y: x).batch(batch_size)
-
     # Batch-Size festlegen und Daten mischen
     train_ds = train_ds.batch(batch_size).shuffle(buffer_size=n_train)
-    test_ds = test_ds.batch(batch_size)
+    validation_ds = validation_ds.batch(batch_size)
 
-    return train_ds, test_ds, train_ds_features
+    return train_ds, validation_ds

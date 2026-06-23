@@ -24,10 +24,10 @@ class enviroment(gym.Env):
         self.render_mode = render_mode
         self.screen = None
 
-        # Momentan unbenutzt
+        # Maximale Anzahl von Steps pro Episode (unbenutzt)
         self.max_steps = 50000
 
-        # Momentan unbenutzt
+        # Step-count (unbenutzt)
         self.step_count = 0
 
 
@@ -75,7 +75,7 @@ class enviroment(gym.Env):
 
     def step(self, action):
         
-        # Step counter
+        # Step counter (unbenutzt)
         self.step_count += 1
 
 

@@ -13,7 +13,7 @@ def load_data(file_path, n_train=3000):
         "pos_x",
         "pos_y",
         "angle",
-        "turn_angle",
+        "turn_angle", 
         "speed_norm" 
     ]
 

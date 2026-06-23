@@ -33,10 +33,15 @@ history = model.fit(
 
 # Modell evaluieren
 print("\nModell evaluieren:")
-results = model.evaluate(x_test, y_test, return_dict=True)
+if len(x_test) > 0:
+    results = model.evaluate(x_test, y_test, return_dict=True)
+else:
+    print("Kein Testset vorhanden – Evaluation übersprungen.")
+    results = None
 
-for key, value in results.items():
-    print(f"{key}: {value}")
+if results != None:
+    for key, value in results.items():
+        print(f"{key}: {value}")
 
 # Modell speichern
 save_path = Path.cwd() / ".." / "Supervised_Learning_Experimental" / "ai" / train_cfg["model_save_path"]

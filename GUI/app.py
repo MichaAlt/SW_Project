@@ -27,7 +27,7 @@ MAPS_DIR = BASE_DIR / "PNG_File"
 def main():
     root = tk.Tk()
     root.title("GUI")
-    root.geometry("1000x650")
+    root.geometry("1000x720")
     root.minsize(1000, 500)
     root.configure(background="gray")
 
@@ -132,11 +132,15 @@ def create_model_frame(parent, title, model_type, data_folder, model_folder, exp
     map_box.bind("<<ComboboxSelected>>",  lambda e: config_changed(e, experimental))
     map_box.pack(padx=10, pady=5, fill="x")
 
-    tk.Label(frame, text="New model name", bg="gray").pack()
+    tk.Label(frame, text="New training data", bg="gray").pack()
+    data_name_text = tk.Text(frame, height=1)
+    data_name_text.pack(padx=10, pady=5, fill="x")
 
+    tk.Label(frame, text="New model name", bg="gray").pack()
     model_name_text = tk.Text(frame, height=1)
     model_name_text.pack(padx=10, pady=5, fill="x")
 
+    ttk.Button(frame,text=f"Create new {model_type} data file",command=lambda: create_data_file(data_name_text,model_type,data_box,data_folder,experimental)).pack(padx=80, pady=6, ipady=8, fill="x")
     ttk.Button(frame,text=f"Create new {model_type} model",command=lambda: create_model(model_name_text,model_type,model_box,model_folder, experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
     ttk.Button(frame,text=f"Start {model_type} data collection",command=lambda: start_simulation("data_collection",model_type,model_box,map_box,experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
     ttk.Button(frame,text=f"Train {model_type} model",command=lambda: train_model(model_type, model_box, experimental)).pack(padx=80,pady=6,ipady=8,fill="x")
@@ -182,6 +186,27 @@ def create_model(text_widget, model_type, model_box, model_folder, experimental)
     update_config_model(model_type, model_name, experimental)
     print(f"{model_type} model created: {model_path}")
 
+def create_data_file(text_widget, model_type, data_box, data_folder, experimental=False):
+
+    file_name = text_widget.get("1.0", tk.END).strip()
+
+    if file_name == "":
+        file_name = "new_data"
+
+    if not file_name.endswith(".csv"):
+        file_name += ".csv"
+
+    file_path = data_folder / file_name
+
+    file_path.touch()
+
+    data_box["values"] = get_folder_entries(data_folder)
+    data_box.set(file_name)
+
+    update_config_data(model_type, file_name, experimental)
+
+    print(f"{model_type} data file created: {file_path}")
+    
 def start_simulation(mode, model_type, model_box, map_box ,experimental):
     update_mode(mode)
 
@@ -343,29 +368,35 @@ def update_prediction_type(model_type):
     save_config(config, backup)
 
 
-def update_config_data(model_type, file_name, experimental = False):
+def update_config_data(model_type, file_name, experimental=False):
     config = load_config()
 
     if config is None:
         return
 
     backup = copy.deepcopy(config)
+
     config.setdefault("train", {})
+    config.setdefault("simulation", {})
+    config.setdefault("train_regression_exp", {})
+    config.setdefault("manual_run_exp", {})
+    config.setdefault("auto_collect_centerline_exp", {})
 
     if model_type == "classification":
-        config["train"]["data_file_classification"] = str(
-            Path("data_file") / "classification_data" / file_name
-        )
+
+        config["train"]["data_file_classification"] = str(Path("data_file") / "classification_data" / file_name)
+        config["simulation"]["data_save_path_classification"] = str(Path("..") / "ai" / "data_file" / "classification_data" / file_name)
 
     elif model_type == "regression":
-        if experimental == False:
-            config["train"]["data_file_regression"] = str(
-                Path("data_file") / "regression_data" / file_name
-            )
-        else: 
-            config["train_regression_exp"]["data_file"] = str(
-                Path("ai") / "data_file" / file_name
-        )
+
+        if not experimental:
+            config["train"]["data_file_regression"] = str(Path("data_file") / "regression_data" / file_name)
+            config["simulation"]["data_save_path_regression"] = str(Path("..") / "ai" / "data_file" / "regression_data" / file_name)
+        else:
+            config["train_regression_exp"]["data_file"] = str(Path("ai") / "data_file" / file_name)
+            save_path = str(Path("..") / "ai" / "data_file" / file_name)
+            config["manual_run_exp"]["data_save_path_regression"] = save_path
+            config["auto_collect_centerline_exp"]["data_save_path"] = save_path
 
     save_config(config, backup)
 
