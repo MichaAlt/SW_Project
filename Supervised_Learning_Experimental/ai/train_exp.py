@@ -10,6 +10,7 @@ sys.path.append(str(ROOT_DIR))
 
 from Config.config_loader import load_config
 
+# Konfigurationen laden
 config = load_config()
 train_cfg = config["train_regression_exp"]
 

@@ -17,16 +17,19 @@ def load_data(file_path, n_train=3000):
         "speed_norm" 
     ]
 
+    # Daten mischen
     data = data.sample(frac=1, random_state=42).reset_index(drop=True)
 
+    # Aufteilen in Trainings- und Testdaten
     data_train = data.iloc[:n_train]
     data_test = data.iloc[n_train:]
 
-    # Eingabe: nur 5 Sensorwerte verwenden
+    # Eingabe-Spalten fuer Trainingsdaten festlegen
     x_train = data_train[
         ["r_right", "r_right_front", "r_front", "r_left_front", "r_left"]
     ].values.astype("float32")
 
+    # Eingabe-Spalten fuer Testdaten festlegen
     x_test = data_test[
         ["r_right", "r_right_front", "r_front", "r_left_front", "r_left"]
     ].values.astype("float32")

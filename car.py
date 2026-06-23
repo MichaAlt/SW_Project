@@ -8,7 +8,7 @@ BORDER_COLOR = (255, 255, 255)
 START_POS = [830, 920]
 START_ANGLE = 0
 
-
+# Car-Klasse der ausgesuchten Simulation
 class Car:
     def __init__(self, car_png_path):
 
@@ -62,7 +62,7 @@ class Car:
 
         x, y = self.center
 
-        # Zuerst prüfen, ob das Auto außerhalb der Karte ist, danach auf Kollision mit dem Rand prüfen
+        # Positions- und Kollisionspruefung
         map_w, map_h = game_map.get_size()
         if x < 0 or x >= map_w or y < 0 or y >= map_h:
             self.alive = False

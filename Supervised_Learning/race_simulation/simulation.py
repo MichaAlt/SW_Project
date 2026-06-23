@@ -37,8 +37,10 @@ WIDTH, HEIGHT = get_screen_size(manual_cfg)
 
 def main():
     os.environ["SDL_RENDER_DRIVER"] = "opengl"
+    # Pygame-Module initialisieren
     pygame.init()
     
+    # Karte laden und alle für die Darstellung benoetigten Werte zurueckgeben
     screen, game_map ,display_map, scale, offset_x, offset_y = load_map(simulation_cfg["map_file"], WIDTH, HEIGHT)
     pygame.display.set_caption("Auto mit Sensoren")
     clock = pygame.time.Clock()

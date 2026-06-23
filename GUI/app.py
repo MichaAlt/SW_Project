@@ -6,8 +6,10 @@ import copy
 import subprocess
 import sys
 
-
+# Projektwurzel 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Pfade fuer das GUI
 CONFIG_PATH = BASE_DIR / "Config" / "config.json"
 
 CLASSIFICATION_DATA_DIR = BASE_DIR / "Supervised_Learning" / "ai" / "data_file" / "classification_data"
@@ -24,6 +26,7 @@ SAC_MODELS_DIR = BASE_DIR / "Reinforcement_Learning" / "models_file"/ "SAC_model
 
 MAPS_DIR = BASE_DIR / "PNG_File"
 
+# Hauptfenster des GUI erstellen
 def main():
     root = tk.Tk()
     root.title("GUI")
@@ -56,8 +59,8 @@ def main():
 
     regression_experimental_frame = create_model_frame(
         content_frame,
-        "Regression",
-        "regression",
+        "Regression Experimental",
+        "regression_experimental",
         REGRESSION_EXPERIMENTAL_DATA_DIR,
         REGRESSION_EXPERIMENTAL_MODELS_DIR,
         True
@@ -86,7 +89,8 @@ def main():
     show_frame("classification")
     root.mainloop()
 
-
+# GUI-FUNKTIONEN FUER SUPERVISED_LEARNING
+# Supervised_Learning-Fesnter fuer Mehrklassifikation Regression erstellen
 def create_model_frame(parent, title, model_type, data_folder, model_folder, experimental=False):
     frame = tk.Frame(parent, bg="gray")
 
@@ -163,7 +167,7 @@ def create_model_frame(parent, title, model_type, data_folder, model_folder, exp
     optimizer_box.pack(padx=10,pady=5,fill="x")
     return frame
 
-
+# Verzeichnisinhalte sortiert zurueckgeben
 def get_folder_entries(folder):
     folder.mkdir(parents=True, exist_ok=True)
 
@@ -173,6 +177,7 @@ def get_folder_entries(folder):
         if not f.name.startswith(".")
     ])
 
+# Neues Modell erstellen
 def create_model(text_widget, model_type, model_box, model_folder, experimental):
     model_name = text_widget.get("1.0", tk.END).strip()
     if model_name == "":model_name = "new_model"
@@ -186,6 +191,7 @@ def create_model(text_widget, model_type, model_box, model_folder, experimental)
     update_config_model(model_type, model_name, experimental)
     print(f"{model_type} model created: {model_path}")
 
+# Neue CSV-Datei erstellen
 def create_data_file(text_widget, model_type, data_box, data_folder, experimental=False):
 
     file_name = text_widget.get("1.0", tk.END).strip()
@@ -206,7 +212,8 @@ def create_data_file(text_widget, model_type, data_box, data_folder, experimenta
     update_config_data(model_type, file_name, experimental)
 
     print(f"{model_type} data file created: {file_path}")
-    
+
+# Simulation starten
 def start_simulation(mode, model_type, model_box, map_box ,experimental):
     update_mode(mode)
 
@@ -218,7 +225,7 @@ def start_simulation(mode, model_type, model_box, map_box ,experimental):
     if map_box.get():
         update_config_map(map_box.get())
 
-    # Wird geandert, wenn manual_run und ai_run von Supervised_Learning_Experimental zuammengefuegt werden
+    # Notwendig, da manual_run.py und ai_run.py in Supervised_Learning_Experimental nicht in simulation.py zusammengefasst
     if experimental:
         if mode == "data_collection":
             manual_run(True)
@@ -234,6 +241,7 @@ def start_simulation(mode, model_type, model_box, map_box ,experimental):
         cwd=str(simulation_dir)
     )
 
+# Training starten
 def train_model(model_type, model_box, experimental):
     update_prediction_type(model_type)
 
@@ -252,6 +260,7 @@ def train_model(model_type, model_box, experimental):
         cwd=str(working_dir)
     )
 
+# Modus (ai_run oder Datensammlung) in der Konfiguration updaten
 def update_mode(mode):
     config = load_config()
 
@@ -264,6 +273,7 @@ def update_mode(mode):
 
     save_config(config, backup)
 
+# Optimizer in der Konfiguration updaten
 def update_config_optimizer(optimizer_name):
     config = load_config()
 
@@ -278,6 +288,7 @@ def update_config_optimizer(optimizer_name):
 
     save_config(config, backup)
 
+# manual_run.py starten (Nur noch verwendet fuer Supervised_Learning_Experimental)
 def manual_run(experimental):
 
     if experimental == False:
@@ -292,6 +303,7 @@ def manual_run(experimental):
         cwd=str(race_simulation_dir)
     )
 
+# ai_run.py starten (Nur noch verwendet fuer Supervised_Learning_Experimental)
 def run_model(model_type, model_box, map_box, experimental):
     update_prediction_type(model_type)
 
@@ -319,7 +331,7 @@ def run_model(model_type, model_box, map_box, experimental):
         cwd=str(race_simulation_dir)
     )
 
-
+# Reagiert auf GUI-Aenderungen und aktualisiert entsprechend die Config-Datei
 def config_changed(event, experimental):
     widget = event.widget
 
@@ -334,6 +346,8 @@ def config_changed(event, experimental):
 
     elif widget.config_key == "optimizer":
         update_config_optimizer(widget.get())
+
+# Config-Datei wird geladen und zurueckgegeben 
 def load_config():
     try:
         with open(CONFIG_PATH, "r") as file:
@@ -342,7 +356,7 @@ def load_config():
         print("Error loading config:", error)
         return None
 
-
+# Config-Datei speichern
 def save_config(config, backup):
     try:
         with open(CONFIG_PATH, "w") as file:
@@ -353,7 +367,7 @@ def save_config(config, backup):
         with open(CONFIG_PATH, "w") as file:
             json.dump(backup, file, indent=4)
 
-
+# Prediction-Typ aktualisieren
 def update_prediction_type(model_type):
     config = load_config()
 
@@ -367,7 +381,7 @@ def update_prediction_type(model_type):
 
     save_config(config, backup)
 
-
+# Config-Datei aktualisieren
 def update_config_data(model_type, file_name, experimental=False):
     config = load_config()
 
@@ -400,7 +414,7 @@ def update_config_data(model_type, file_name, experimental=False):
 
     save_config(config, backup)
 
-
+# Model-Pfad aktualisieren
 def update_config_model(model_type, model_name, experimental = False):
     config = load_config()
 
@@ -438,7 +452,7 @@ def update_config_model(model_type, model_name, experimental = False):
 
     save_config(config, backup)
 
-
+# Map-Pfad aktualisieren
 def update_config_map(map_name):
     config = load_config()
 
@@ -459,8 +473,8 @@ def update_config_map(map_name):
 
 
 
-
-
+# GUI-FUNKTIONEN FUER REINFORCEMENT_LEARNING
+# Reinforcement_Learning-Fesnter erstellen
 def create_rl_frame(parent):
 
     frame = tk.Frame(parent, bg="gray")
@@ -538,7 +552,7 @@ def create_rl_frame(parent):
 
     return frame
 
-
+# Model-Pfad zurueckgeben
 def get_model_dir(algorithm):
 
     match algorithm:
@@ -549,7 +563,7 @@ def get_model_dir(algorithm):
         case "SAC":
             return SAC_MODELS_DIR
 
-
+# Modell-Dateien zurueckgeben
 def get_model_entries(algorithm):
 
     folder = get_model_dir(algorithm)
@@ -561,7 +575,7 @@ def get_model_entries(algorithm):
         if not f.name.startswith(".")
         ])
 
-
+# Neues RL-Modell erstellen, Datei anlegen und in Config aktualisieren
 def create_model_rl(text_widget,algorithm_box,train_model_box,run_model_box):
 
     model_name = text_widget.get("1.0",tk.END).strip()
@@ -581,17 +595,19 @@ def create_model_rl(text_widget,algorithm_box,train_model_box,run_model_box):
     update_config_run_model_rl(algorithm,model_name)
     print(f"{algorithm} model created: {model_path}")
 
+# RL-Training starten
 def train_model_rl():
 
     train_path = (BASE_DIR / "Reinforcement_Learning" / "train_rl.py")
     subprocess.run([sys.executable, str(train_path)],cwd=str(BASE_DIR/"Reinforcement_Learning"))
 
-
+# Durchlauf eines RL-Modells starten bzw. run_rl.py starten
 def run_model_rl():
 
     run_path = (BASE_DIR  / "Reinforcement_Learning"/ "run_rl.py") 
     subprocess.run([sys.executable, str(run_path)],cwd=str(BASE_DIR /"Reinforcement_Learning"))
 
+# RL-Algorithmus im Config aktualisieren
 def update_config_algorithm_rl(algorithm):
 
     config = load_config()
@@ -605,7 +621,7 @@ def update_config_algorithm_rl(algorithm):
 
     save_config(config,backup)
 
-
+# RL-Trainingsmodell im Config aktualisieren
 def update_config_train_model_rl(algorithm,model_name):
 
     config = load_config()
@@ -625,7 +641,7 @@ def update_config_train_model_rl(algorithm,model_name):
 
     save_config(config,backup)
 
-
+# RL-Durchlauf-Modell im Config aktualisieren
 def update_config_run_model_rl(algorithm,model_name):
 
     config = load_config()
@@ -645,7 +661,7 @@ def update_config_run_model_rl(algorithm,model_name):
 
     save_config(config,backup)
 
-
+# Map in der Config aktualisieren
 def update_config_map_rl(map_name):
     config = load_config()
 

@@ -118,7 +118,7 @@ def main():
         pygame.display.flip()
         clock.tick(60)
 
-        # Speicherrate: Kurven häufiger, Geraden seltener
+        # Speicherrate: Kurven häufiger und Geraden seltener, fuer bessere Datenvariablität
         is_turning = keys[pygame.K_a] or keys[pygame.K_d]
         should_save = False
 
