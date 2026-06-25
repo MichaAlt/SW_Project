@@ -60,7 +60,7 @@ def main():
     regression_experimental_frame = create_model_frame(
         content_frame,
         "Regression Experimental",
-        "regression_experimental",
+        "regression",
         REGRESSION_EXPERIMENTAL_DATA_DIR,
         REGRESSION_EXPERIMENTAL_MODELS_DIR,
         True
