@@ -77,6 +77,7 @@ class enviroment(gym.Env):
         self.car.update(self.game_map)
         return self.get_state(), {}
 
+    # Reward berechnen
     def calculate_reward(self, action):
 
         steer = float(action[0])
@@ -129,7 +130,7 @@ class enviroment(gym.Env):
 
         obs = self.get_state()
 
-        reward = self.calculate_reward(self,action)
+        reward = self.calculate_reward(action)
 
         """
         if self.step_count >= self.max_steps:
