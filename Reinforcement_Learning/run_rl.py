@@ -56,6 +56,9 @@ while running:
     # state, terminated, truncated pro step abfragen. (reward und info nicht noetig) 
     state, _, terminated, truncated, _ = env.step(action)
 
+    print("state:", state)
+
+    print("state shape:", state.shape)
     # Darstellung der aktuellen Umgebung im Pygame-Fenster
     env.render()
 
@@ -63,3 +66,5 @@ while running:
     # truncated = Limit erreicht (unbenutzt)
     if terminated or truncated:
         state, _ = env.reset()
+        print("state:", state)
+        print("state shape:", state.shape)

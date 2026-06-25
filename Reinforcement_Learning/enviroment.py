@@ -50,20 +50,26 @@ class enviroment(gym.Env):
             low=np.array([0, 0, 0, 0, 0, 0]),
             high=np.array([enviroment_cfg["speed_scaling"], 300, 300, 300, 300, 300]),
             shape=(6,),
-            dtype=np.float32
+            dtype=np.float64
         )
 
         # Action definieren
         self.action_space = spaces.Box(
             low=np.array([-1.0, -1.0]),
             high=np.array([1.0, 1.0]),
-            dtype=np.float32
+            dtype=np.float64
         )
 
     # State abfragen
     def get_state(self):
-        return np.array([self.car.speed] + self.car.radar_values, dtype=np.float32)
+        radar_values = list(self.car.radar_values)
 
+        while len(radar_values) < 5:
+            radar_values.append(0.0)
+
+        radar_values = radar_values[:5]
+
+        return np.array([self.car.speed] + radar_values, dtype=np.float32)
     # Umgebung für eine neue Episode zuruecksetzen
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
