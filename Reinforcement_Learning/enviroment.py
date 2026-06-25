@@ -77,27 +77,10 @@ class enviroment(gym.Env):
         self.car.update(self.game_map)
         return self.get_state(), {}
 
-    # Ausfuehrung eines Zeitschrittes im Enviroment
-    def step(self, action):
-        
-        # Step counter (unbenutzt)
-        self.step_count += 1
-
-        # terminated = Episode natuerlich beendet
-        # truncated = Limit erreicht (unbenutzt)
-        truncated = False
-        terminated = False
+    def calculate_reward(self, action):
 
         steer = float(action[0])
         speed = float(action[1])
-
-        # Skalierung
-        self.car.angle += steer * enviroment_cfg["steer_scaling"] 
-        self.car.speed = speed * enviroment_cfg["speed_scaling"] 
-
-        self.car.update(self.game_map)
-
-        obs = self.get_state()
 
         # Belohnungs-Wert
         reward = 0.0
@@ -122,16 +105,42 @@ class enviroment(gym.Env):
         # Rückwärtsfahren bestrafen
         if self.car.speed < 0:
             reward -= 2
+        return reward
+ 
+    # Ausfuehrung eines Zeitschrittes im Enviroment
+    def step(self, action):
+        
+        # Step counter (unbenutzt)
+        self.step_count += 1
+
+        # terminated = Episode natuerlich beendet
+        # truncated = Limit erreicht (unbenutzt)
+        truncated = False
+        terminated = False
+
+        steer = float(action[0])
+        speed = float(action[1])
+
+        # Skalierung
+        self.car.angle += steer * enviroment_cfg["steer_scaling"] 
+        self.car.speed = speed * enviroment_cfg["speed_scaling"] 
+
+        self.car.update(self.game_map)
+
+        obs = self.get_state()
+
+        reward = self.calculate_reward(self,action)
+
         """
         if self.step_count >= self.max_steps:
             truncated = True
         """
         if not self.car.alive:
             terminated = True
-        
 
         return obs, reward, terminated, truncated, {}
 
+    
     # Darstellung der aktuellen Umgebung im Pygame-Fenster
     def render(self):
         
