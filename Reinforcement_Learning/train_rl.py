@@ -42,7 +42,7 @@ match(train_rl_cfg["rl_algorithm"]):
         )
 
 # Altes Modell zum weiter trainieren laden
-if train_rl_cfg["continue_model_training"] == "true":
+if train_rl_cfg["continue_model_training"] == True:
     match(train_rl_cfg["rl_algorithm"]):
         case "PPO":
             model = PPO.load(train_rl_cfg["model_load_path_PPO"], env = env)
