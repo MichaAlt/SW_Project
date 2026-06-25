@@ -1,12 +1,12 @@
 {
     "train": {
         "data_file_classification": "data_file/classification_data/training_data.csv",
-        "data_file_regression": "data_file/regression_data/training_data_1.csv",
+        "data_file_regression": "data_file/regression_data/training_data_5.csv",
         "n_train": 3000,
         "epochs": 150,
         "batch_size": 30,
         "model_save_path_classification": "models_file/classification_models/model5_combined.keras",
-        "model_save_path_regression": "models_file/regression_models/model_1.keras",
+        "model_save_path_regression": "models_file/regression_models/model_combined.keras",
         "model_type": 1,
         "optimizer": "adam"
     },
@@ -19,7 +19,7 @@
     "ai_run": {
         "map_file": "../../PNG_File/map4.png",
         "model_path_classification": "../ai/models_file/classification_models/model5_combined.keras",
-        "model_path_regression": "../ai/models_file/regression_models/model_1.keras",
+        "model_path_regression": "../ai/models_file/regression_models/model_combined.keras",
         "width": "auto",
         "height": "auto",
         "forward_speed": 5,
@@ -29,8 +29,8 @@
     },
     "manual_run": {
         "map_file": "../../PNG_File/map3.png",
-        "data_save_path_classification": "../ai/data_file/classification_data/loeschenc.csv",
-        "data_save_path_regression": "../ai/data_file/regression_data/loeschenr.csv",
+        "data_save_path_classification": "../ai/data_file/classification_data/test.csv",
+        "data_save_path_regression": "../ai/data_file/regression_data/test.csv",
         "width": "auto",
         "height": "auto",
         "forward_speed": 5,
@@ -39,9 +39,9 @@
         "turn_angle_soft": 1.5
     },
     "simulation": {
-        "map_file": "../../PNG_File/car.png",
+        "map_file": "../../PNG_File/map5.png",
         "data_save_path_classification": "../ai/data_file/classification_data/training_data.csv",
-        "data_save_path_regression": "../ai/data_file/regression_data/training_data_1.csv"
+        "data_save_path_regression": "../ai/data_file/regression_data/training_data_5.csv"
     },
     "feature_scaling": {
         "method": 1
@@ -50,15 +50,15 @@
         "prediction": "regression"
     },
     "train_regression_exp": {
-        "data_file": "ai/data_file/auto_collect_speed_auto6.csv",
+        "data_file": "ai/data_file/new_data.csv",
         "n_train": 6000,
         "epochs": 150,
         "batch_size": 20,
-        "model_save_path": "models_file/model_speed_world_neu6.keras"
+        "model_save_path": "models_file/new_model.keras"
     },
     "ai_run_exp": {
         "map_file": "../../PNG_File/map1.png",
-        "model_path": "../ai/models_file/model_speed_world_neu6.keras",
+        "model_path": "../ai/models_file/new_model.keras",
         "width": "auto",
         "height": "auto",
         "forward_speed_max": 5.0,
@@ -67,7 +67,7 @@
     },
     "manual_run_exp": {
         "map_file": "../../PNG_File/map1.png",
-        "data_save_path_regression": "../ai/data_file/auto_collect_speed_auto6.csv",
+        "data_save_path_regression": "../ai/data_file/new_data.csv",
         "width": "auto",
         "height": "auto",
         "forward_speed": 5,
@@ -77,7 +77,7 @@
     },
     "auto_collect_centerline_exp": {
         "map_file": "../../PNG_File/map1.png",
-        "data_save_path": "../ai/data_file/auto_collect_speed_auto6.csv",
+        "data_save_path": "../ai/data_file/new_data.csv",
         "width": "auto",
         "height": "auto",
         "lookahead_distance": 8,
@@ -101,24 +101,24 @@
         "lap_reset_radius": 100
     },
     "train_rl": {
-        "map_file": "../PNG_File/map2.png",
+        "map_file": "../PNG_File/map1.png",
         "model_load_path_PPO": "models_file/PPO_models_file/model_1.zip",
-        "model_save_path_PPO": "models_file/PPO_models_file/model_2.zip",
+        "model_save_path_PPO": "models_file/PPO_models_file/Hallo.zip",
         "model_load_path_DDPG": "models_file/DDPG_models_file/model_1.zip",
         "model_save_path_DDPG": "models_file/DDPG_models_file/Yuhu.zip",
         "model_load_path_SAC": "models_file/SAC_models_file/model_2.zip",
         "model_save_path_SAC": "models_file/SAC_models_file/model_2.zip",
-        "rl_algorithm": "DDPG",
+        "rl_algorithm": "PPO",
         "continue_model_training": false,
         "total_timesteps": 50000,
         "n_envs": 4
     },
     "run_rl": {
-        "map_file": "../PNG_File/map2.png",
-        "model_load_path_PPO": "models_file/PPO_models_file/model_1.zip",
+        "map_file": "../PNG_File/map1.png",
+        "model_load_path_PPO": "models_file/PPO_models_file/Hallo.zip",
         "model_load_path_DDPG": "models_file/DDPG_models_file/Yuhu.zip",
         "model_load_path_SAC": "models_file/SAC_models_file/model_2.zip",
-        "rl_algorithm": "DDPG"
+        "rl_algorithm": "PPO"
     },
     "enviroment": {
         "steer_scaling": 20,

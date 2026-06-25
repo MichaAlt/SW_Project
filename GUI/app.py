@@ -503,7 +503,7 @@ def create_rl_frame(parent):
     train_model_box.pack(padx=10, pady=5, fill="x")
 
     # Load Model
-    tk.Label(frame, text="Select load model", bg="gray").pack()
+    tk.Label(frame, text="Select model to continue training", bg="gray").pack()
 
     load_model_box = ttk.Combobox(frame, state="readonly")
     load_model_box["values"] = get_model_entries("PPO")
