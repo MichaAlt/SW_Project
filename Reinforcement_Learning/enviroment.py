@@ -2,7 +2,7 @@ import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
 import pygame
-import sys
+import sys, math
 from pathlib import Path
 
 # Projektwurzel
@@ -37,7 +37,7 @@ class enviroment(gym.Env):
         )
 
         # Car initialisieren
-        car_png_path = '../PNG_File/car.png'
+        car_png_path = '../Car_Img/car.png'
         self.car = Car(car_png_path)
 
         # Pygame-Module initialisieren
@@ -129,7 +129,7 @@ class enviroment(gym.Env):
 
         obs = self.get_state()
 
-        reward = self.calculate_reward(self,action)
+        reward = self.calculate_reward(action)
 
         """
         if self.step_count >= self.max_steps:
@@ -140,13 +140,57 @@ class enviroment(gym.Env):
 
         return obs, reward, terminated, truncated, {}
 
-    
+    def draw_filled_semicircle(self, screen, center, radius, angle, color):
+
+        points = [center]
+
+        start_angle = angle - math.pi / 2
+
+        end_angle = angle + math.pi / 2
+
+        steps = 20
+
+        for i in range(steps + 1):
+
+            t = start_angle + (end_angle - start_angle) * i / steps
+
+            x = center[0] + math.cos(t) * radius
+
+            y = center[1] - math.sin(t) * radius
+
+            points.append((x, y))
+
+        pygame.draw.polygon(screen, color, points)
     # Darstellung der aktuellen Umgebung im Pygame-Fenster
     def render(self):
         
         self.screen.fill((0, 0, 0))
         self.screen.blit(self.display_map, (self.offset_x, self.offset_y))
         self.car.draw(self.screen, self.font, self.scale, self.offset_x, self.offset_y)
+            # Draw a red circle
+        radius = 120
 
+        center = (
+
+            int(self.car.position[0] + self.offset_x),
+
+            int(self.car.position[1] + self.offset_y)
+
+        )
+        self.draw_filled_semicircle(
+            
+            self.screen,
+
+            center,
+
+            radius,
+
+            math.radians(self.car.angle),
+
+            (255, 255, 0)
+
+        )
+
+  
         pygame.display.flip()
         self.clock.tick(60)
