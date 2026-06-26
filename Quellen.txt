@@ -1,0 +1,5 @@
+Quellen für die RL Präsentation:
+
+https://huggingface.co/blog/deep-rl-ppo 
+https://www.ibm.com/de-de/think/topics/reinforcement-learning
+ChatGPT 
