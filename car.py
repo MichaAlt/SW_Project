@@ -30,6 +30,7 @@ class Car:
             int(self.position[1] + CAR_SIZE_Y / 2)
         ]
 
+    
     def draw(self, screen, font, scale, offset_x, offset_y):
         scaled_sprite = pygame.transform.scale(
             self.rotated_sprite,
@@ -39,10 +40,14 @@ class Car:
             )
         )
 
-        draw_x = int(self.position[0] * scale + offset_x)
-        draw_y = int(self.position[1] * scale + offset_y)
+        center_draw = (
+            int(self.center[0] * scale + offset_x),
+            int(self.center[1] * scale + offset_y)
+        )
 
-        screen.blit(scaled_sprite, (draw_x, draw_y))
+        rect = scaled_sprite.get_rect(center=center_draw)
+
+        screen.blit(scaled_sprite, rect)
         self.draw_radars(screen, font, scale, offset_x, offset_y)
 
     def update(self, game_map):
